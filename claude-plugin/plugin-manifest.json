@@ -1,0 +1,73 @@
+{
+  "name": "personalized-adaptive-plugin",
+  "version": "1.0.0",
+  "description": "Personalized Claude plugin with adaptive learning, progressive context management, and proactive needs detection across all built-in connectors for Desktop, iOS, and Web",
+  "author": "AI-First Workspace",
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=1.0.0",
+    "claude_ios": ">=1.0.0",
+    "claude_web": ">=1.0.0",
+    "mcp_version": "2024-11-05"
+  },
+  "entry_point": "CLAUDE.md",
+  "capabilities": [
+    "context-management",
+    "skill-execution",
+    "progressive-learning",
+    "proactive-needs-detection",
+    "connector-orchestration",
+    "platform-adaptive-responses"
+  ],
+  "components": {
+    "connectors": {
+      "entry": "config/connectors.json",
+      "description": "Unified registry of all 12 Claude built-in connectors with workspace-specific mappings"
+    },
+    "context": {
+      "user_profile": "config/user-profile.json",
+      "workspace_context": "context/workspace-context.json",
+      "session_patterns": "context/session-patterns.json",
+      "context_engine": "context/context-engine.md"
+    },
+    "skills": {
+      "registry": "skills/skills-registry.json",
+      "department_skills": "skills/department/",
+      "connector_skills": "skills/connector/",
+      "cross_functional_skills": "skills/cross-functional/"
+    },
+    "learning": {
+      "engine": "learning/learning-engine.md",
+      "preferences": "learning/preferences.json",
+      "patterns": "learning/observed-patterns.json",
+      "adaptation_log": "learning/adaptation-log.json",
+      "confidence": "learning/confidence-scores.json"
+    },
+    "proactive": {
+      "engine": "proactive/needs-engine.md",
+      "requirements": "proactive/derived-requirements.json",
+      "triggers": "proactive/triggers.json",
+      "suggestions_log": "proactive/suggestions-log.json"
+    },
+    "scripts": {
+      "workflows": "scripts/workflows/",
+      "sync": "scripts/sync/",
+      "reports": "scripts/reports/"
+    }
+  },
+  "cursorrules_integration": {
+    "mode": "complement",
+    "root_rules": "../.cursorrules",
+    "department_rules_pattern": "../Docs/*/.cursorrules",
+    "project_rules_pattern": "../Projects/.cursorrules",
+    "note": "This plugin layers capabilities on top of existing .cursorrules — it NEVER modifies them"
+  },
+  "information_architecture": {
+    "canonical_tag": "[CANONICAL]",
+    "reference_tag_pattern": "[REF: {path}#{section}]",
+    "confirmed_tag_pattern": "[CONFIRMED: {source}]",
+    "placeholder_tag_pattern": "[PLACEHOLDER: {owner}]",
+    "adapted_tag_pattern": "[ADAPTED from {source}: \"{original}\" -> \"{adapted}\"]",
+    "inferred_tag": "[ANALYSIS:INFERRED]"
+  }
+}

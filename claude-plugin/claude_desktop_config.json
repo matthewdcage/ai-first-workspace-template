@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "workspace-filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/ai-first-workspace-template"],
+      "env": {}
+    },
+    "workspace-plugin": {
+      "command": "python3",
+      "args": ["claude-plugin/scripts/sync/cross-platform-sync.py", "--serve"],
+      "env": {
+        "WORKSPACE_ROOT": "/home/user/ai-first-workspace-template",
+        "PLUGIN_ROOT": "/home/user/ai-first-workspace-template/claude-plugin",
+        "PLUGIN_MODE": "mcp_server"
+      }
+    }
+  },
+  "_instructions": {
+    "setup_steps": [
+      "1. Copy this file to your Claude Desktop config location:",
+      "   macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
+      "   Windows: %APPDATA%\\Claude\\claude_desktop_config.json",
+      "2. Update the filesystem path to match your workspace location",
+      "3. Restart Claude Desktop to load the MCP servers",
+      "4. Connect additional built-in connectors via claude.com/connectors:",
+      "   - Google Drive, Docs, Sheets",
+      "   - Notion",
+      "   - Slack",
+      "   - GitHub",
+      "   - Gmail",
+      "   - Google Calendar",
+      "   - Zapier (optional)"
+    ],
+    "connector_directory_url": "https://claude.com/connectors",
+    "note": "Built-in connectors (Google, Notion, Slack, etc.) are configured through Claude's Connectors Directory, not through this MCP config. This file only configures local MCP servers for filesystem access and plugin state management."
+  }
+}

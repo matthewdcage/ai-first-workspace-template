@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "description": "Auto-derived requirements from workflow analysis. These are needs identified by analyzing the workspace state, document integrity, and usage patterns — not explicitly requested by the user.",
+  "requirements": [],
+  "requirement_schema": {
+    "id": "req_XXXXXX",
+    "category": "document_integrity | workflow_optimization | missing_content | stale_content | automation_opportunity",
+    "description": "Clear description of the derived requirement",
+    "detected_date": "ISO8601",
+    "source": "What triggered this detection (e.g., document indexer found broken refs)",
+    "priority": "critical | high | medium | low",
+    "affected_files": ["list of affected file paths"],
+    "suggested_action": "What should be done to address this",
+    "assigned_skill": "Which plugin skill can address this",
+    "status": "open | in_progress | resolved | dismissed",
+    "resolved_date": null,
+    "user_notified": false
+  },
+  "detection_sources": {
+    "document_indexer": {
+      "detects": ["broken [REF:] tags", "orphan [CANONICAL] definitions", "stale [PLACEHOLDER:] tags"],
+      "frequency": "on morning sync and weekly review"
+    },
+    "workspace_scanner": {
+      "detects": ["stale project status cards (>14 days)", "empty department directories", "missing .cursorrules files"],
+      "frequency": "weekly"
+    },
+    "pattern_analyzer": {
+      "detects": ["repetitive manual tasks", "frequent context switches (possible workflow friction)", "unused connectors with matching use cases"],
+      "frequency": "weekly via trend analysis"
+    }
+  }
+}

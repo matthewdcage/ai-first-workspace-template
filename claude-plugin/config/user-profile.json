@@ -1,0 +1,63 @@
+{
+  "identity": {
+    "name": "[PLACEHOLDER: user]",
+    "role": "[PLACEHOLDER: user]",
+    "title": "[PLACEHOLDER: user]",
+    "email": "[PLACEHOLDER: user]",
+    "organization": "[PLACEHOLDER: user]",
+    "department_primary": "[PLACEHOLDER: user]",
+    "departments_accessible": ["strategy", "product", "sales_marketing", "operations", "hiring", "finance", "legal_hr"],
+    "timezone": "UTC",
+    "locale": "en-US"
+  },
+  "communication": {
+    "style": "balanced",
+    "tone": "professional",
+    "format_preference": "markdown",
+    "response_length": "moderate",
+    "proactive_level": "moderate",
+    "platform_overrides": {
+      "desktop": {
+        "response_length": "comprehensive",
+        "format_preference": "structured_markdown",
+        "include_cross_references": true,
+        "include_source_tags": true
+      },
+      "ios": {
+        "response_length": "brief",
+        "format_preference": "bullet_points",
+        "include_cross_references": false,
+        "include_source_tags": false,
+        "max_response_chars": 2000
+      }
+    }
+  },
+  "work_patterns": {
+    "primary_tools": ["[PLACEHOLDER: user]"],
+    "peak_hours": {
+      "strategic_thinking": "09:00-12:00",
+      "tactical_work": "13:00-17:00",
+      "review_and_planning": "17:00-18:00"
+    },
+    "meeting_heavy_days": [],
+    "focus_time_preference": "mornings",
+    "review_cadence": "weekly"
+  },
+  "expertise": {
+    "technical_level": "intermediate",
+    "domains": ["[PLACEHOLDER: user]"],
+    "tools_proficient": ["[PLACEHOLDER: user]"]
+  },
+  "department_contexts": {
+    "primary": "[PLACEHOLDER: user]",
+    "secondary": [],
+    "cross_functional_interests": []
+  },
+  "anti_hallucination": {
+    "require_source_tags": true,
+    "use_check_range_for_numbers": true,
+    "check_range_script": "scripts/check_range.py",
+    "canonical_enforcement": "strict",
+    "mark_inferences": true
+  }
+}

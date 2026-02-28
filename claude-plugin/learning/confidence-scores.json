@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "description": "Confidence levels for all learned preferences and patterns. Updated after each session and on user feedback events.",
+  "scoring_rules": {
+    "new_observation": "+0.15 (cap at 0.80 for behavioral patterns)",
+    "user_confirmation": "set to 1.00",
+    "user_acceptance": "+0.15",
+    "user_contradiction": "-0.30",
+    "user_rejection": "-0.30",
+    "user_ignore": "-0.05",
+    "time_decay": "multiply by 0.95 every 30 days (unconfirmed patterns only)",
+    "minimum_confidence": 0.10,
+    "maximum_from_behavior": 0.80,
+    "explicit_preference_confidence": 1.0
+  },
+  "thresholds": {
+    "certain": {"min": 0.95, "action": "Apply automatically, no mention needed"},
+    "high": {"min": 0.80, "action": "Apply automatically, briefly mention"},
+    "moderate": {"min": 0.60, "action": "Suggest and ask for confirmation"},
+    "low": {"min": 0.40, "action": "Track internally, do not surface"},
+    "speculative": {"min": 0.0, "action": "Hypothesis only, may archive"}
+  },
+  "scores": {
+    "pref_workspace_001": {
+      "score": 1.0,
+      "type": "explicit",
+      "last_updated": "2026-02-28",
+      "decay_exempt": true
+    },
+    "pref_workspace_002": {
+      "score": 1.0,
+      "type": "explicit",
+      "last_updated": "2026-02-28",
+      "decay_exempt": true
+    },
+    "pref_workspace_003": {
+      "score": 1.0,
+      "type": "explicit",
+      "last_updated": "2026-02-28",
+      "decay_exempt": true
+    },
+    "pref_workspace_004": {
+      "score": 1.0,
+      "type": "explicit",
+      "last_updated": "2026-02-28",
+      "decay_exempt": true
+    }
+  }
+}

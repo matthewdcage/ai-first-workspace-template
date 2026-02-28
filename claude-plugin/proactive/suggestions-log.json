@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "description": "Complete log of all proactive suggestions generated, including whether they were shown and their outcomes. Feeds back into the learning engine.",
+  "log": [],
+  "entry_schema": {
+    "id": "suggest_XXXXXX",
+    "date": "ISO8601",
+    "category": "calendar | pattern | context | gap | trend",
+    "trigger_id": "ID from triggers.json that fired",
+    "trigger_description": "What condition was met",
+    "suggestion_text": "The suggestion shown to the user",
+    "confidence": "float 0.0-1.0",
+    "priority": "1 (highest) to 5 (lowest)",
+    "platform": "desktop | ios | web",
+    "shown_to_user": "boolean",
+    "reason_not_shown": "rate_limited | below_confidence | already_dismissed | proactive_disabled | null",
+    "outcome": "accepted | rejected | deferred | ignored | not_shown",
+    "outcome_timestamp": "ISO8601 or null",
+    "resulting_action": "What happened after acceptance (if accepted)",
+    "user_feedback": "Any explicit feedback string"
+  },
+  "aggregate_stats": {
+    "total_generated": 0,
+    "total_shown": 0,
+    "total_accepted": 0,
+    "total_rejected": 0,
+    "total_deferred": 0,
+    "total_ignored": 0,
+    "acceptance_rate": null,
+    "by_category": {
+      "calendar": {"shown": 0, "accepted": 0, "rejected": 0},
+      "pattern": {"shown": 0, "accepted": 0, "rejected": 0},
+      "context": {"shown": 0, "accepted": 0, "rejected": 0},
+      "gap": {"shown": 0, "accepted": 0, "rejected": 0},
+      "trend": {"shown": 0, "accepted": 0, "rejected": 0}
+    }
+  }
+}

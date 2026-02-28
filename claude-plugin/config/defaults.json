@@ -1,0 +1,106 @@
+{
+  "version": "1.0.0",
+  "description": "Default settings used as fallbacks when user preferences are not yet established",
+  "communication_defaults": {
+    "style": "balanced",
+    "tone": "professional",
+    "format": "markdown",
+    "response_length": "moderate",
+    "proactive_level": "moderate",
+    "max_proactive_suggestions": 2
+  },
+  "platform_defaults": {
+    "desktop": {
+      "detail_level": "full",
+      "format": "structured_markdown",
+      "include_cross_references": true,
+      "include_source_tags": true,
+      "max_proactive_suggestions": 3
+    },
+    "ios": {
+      "detail_level": "summary",
+      "format": "bullet_points",
+      "include_cross_references": false,
+      "include_source_tags": false,
+      "max_proactive_suggestions": 1,
+      "max_response_chars": 2000,
+      "mobile_actions": ["approve", "defer", "escalate"]
+    },
+    "web": {
+      "detail_level": "full",
+      "format": "structured_markdown",
+      "include_cross_references": true,
+      "include_source_tags": true,
+      "max_proactive_suggestions": 2
+    }
+  },
+  "learning_defaults": {
+    "confidence_thresholds": {
+      "certain": 0.95,
+      "high": 0.80,
+      "moderate": 0.60,
+      "low": 0.40,
+      "speculative": 0.0
+    },
+    "decay_half_life_days": 60,
+    "min_observations_for_pattern": 3,
+    "max_confidence_from_behavior": 0.80,
+    "user_confirmation_boost": 1.0,
+    "user_rejection_penalty": -0.30,
+    "trend_analysis_window_days": 30
+  },
+  "proactive_defaults": {
+    "enabled": true,
+    "max_suggestions_per_response": 2,
+    "min_confidence_for_suggestion": 0.60,
+    "min_confidence_for_auto_action": 0.95,
+    "stale_document_threshold_days": 14,
+    "meeting_prep_lead_time_minutes": 30,
+    "morning_briefing_auto": false
+  },
+  "connector_defaults": {
+    "demo_mode_when_unconfigured": true,
+    "auto_sync_on_context_switch": true,
+    "preferred_sync_direction": "bidirectional",
+    "conflict_resolution": "remote_wins"
+  },
+  "anti_hallucination_defaults": {
+    "require_source_tags": true,
+    "use_check_range_for_numbers": true,
+    "canonical_enforcement": "strict",
+    "mark_inferences_with_tag": "[ANALYSIS:INFERRED]",
+    "max_unsourced_claims": 0
+  },
+  "department_context_defaults": {
+    "strategy": {
+      "default_format": "executive_summary_then_details",
+      "always_include": ["competitive_positioning", "canonical_references"],
+      "default_connectors": ["web_search", "filesystem", "google_sheets"]
+    },
+    "product": {
+      "default_format": "structured_spec",
+      "always_include": ["technical_context", "user_research_references"],
+      "default_connectors": ["filesystem", "github", "notion"]
+    },
+    "sales_marketing": {
+      "default_format": "action_oriented_brief",
+      "always_include": ["client_context", "pipeline_status"],
+      "default_connectors": ["filesystem", "notion", "slack", "calendar"]
+    },
+    "operations": {
+      "default_format": "status_dashboard",
+      "always_include": ["project_status", "team_capacity"],
+      "default_connectors": ["filesystem", "google_sheets", "slack"]
+    },
+    "hiring": {
+      "default_format": "structured_evaluation",
+      "always_include": ["scoring_framework", "evaluation_template"],
+      "default_connectors": ["filesystem", "notion"]
+    },
+    "finance": {
+      "default_format": "financial_summary_with_sources",
+      "always_include": ["data_source_references", "range_validation"],
+      "default_connectors": ["filesystem", "google_sheets", "code_execution"]
+    }
+  }
+}

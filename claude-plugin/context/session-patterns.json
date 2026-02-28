@@ -1,0 +1,67 @@
+{
+  "version": "1.0.0",
+  "description": "Cross-session behavioral pattern tracking. Updated at end of each session by extracting patterns from session context.",
+  "sessions_recorded": 0,
+  "last_session_date": null,
+  "patterns": {
+    "department_time_distribution": {
+      "description": "How time is distributed across departments per session",
+      "data": [],
+      "schema": {
+        "session_date": "ISO8601",
+        "department": "string",
+        "duration_minutes": "number",
+        "time_of_day": "morning|afternoon|evening"
+      }
+    },
+    "context_switch_sequences": {
+      "description": "Common department switching sequences (e.g., strategy -> product -> operations)",
+      "data": [],
+      "schema": {
+        "session_date": "ISO8601",
+        "sequence": ["string"],
+        "frequency": "number"
+      }
+    },
+    "skill_usage": {
+      "description": "Which skills are invoked and how often",
+      "data": [],
+      "schema": {
+        "skill_id": "string",
+        "invocation_count": "number",
+        "last_used": "ISO8601",
+        "typical_context": "string"
+      }
+    },
+    "connector_usage": {
+      "description": "Which connectors are used, for what, and when",
+      "data": [],
+      "schema": {
+        "connector_id": "string",
+        "action": "string",
+        "frequency": "number",
+        "typical_time_of_day": "string"
+      }
+    },
+    "response_format_feedback": {
+      "description": "When user modifies or overrides response formatting",
+      "data": [],
+      "schema": {
+        "date": "ISO8601",
+        "original_format": "string",
+        "user_requested_format": "string",
+        "department_context": "string"
+      }
+    },
+    "suggestion_outcomes": {
+      "description": "Proactive suggestion acceptance/rejection rates",
+      "data": [],
+      "schema": {
+        "suggestion_type": "string",
+        "outcome": "accepted|rejected|modified|ignored",
+        "count": "number"
+      }
+    }
+  },
+  "weekly_summaries": []
+}

@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "description": "Behavioral patterns detected from user interactions. Auto-managed by the learning engine. Patterns require 3+ observations to reach moderate confidence.",
+  "patterns": [],
+  "detectable_pattern_types": [
+    {
+      "type": "time_of_day_preference",
+      "description": "Which departments or tasks the user accesses at different times",
+      "example": "Strategy work in mornings, operations reviews in afternoons"
+    },
+    {
+      "type": "department_frequency",
+      "description": "Relative frequency of department context usage",
+      "example": "Strategy 40%, Product 25%, Operations 20%, Finance 15%"
+    },
+    {
+      "type": "context_switch_sequence",
+      "description": "Common department switching sequences",
+      "example": "Often switches from strategy to product after competitive analysis"
+    },
+    {
+      "type": "response_format_preference",
+      "description": "Preferred response formatting detected from user modifications",
+      "example": "User consistently reformats tables into bullet lists"
+    },
+    {
+      "type": "response_length_preference",
+      "description": "Preferred response length detected from user feedback",
+      "example": "User frequently asks for shorter responses in operations context"
+    },
+    {
+      "type": "skill_preference",
+      "description": "Which skills are invoked most frequently",
+      "example": "Meeting intelligence invoked 3x more than document lifecycle"
+    },
+    {
+      "type": "connector_preference",
+      "description": "Which connectors are preferred for similar tasks",
+      "example": "Prefers Notion over Google Docs for meeting notes"
+    },
+    {
+      "type": "proactive_preference",
+      "description": "How user responds to proactive suggestions",
+      "example": "Always accepts morning briefing, usually dismisses meeting prep"
+    },
+    {
+      "type": "mobile_vs_desktop_behavior",
+      "description": "Different interaction patterns on different platforms",
+      "example": "Quick status checks on iOS, deep analysis on desktop"
+    },
+    {
+      "type": "review_pattern",
+      "description": "How user prefers to review content before finalizing",
+      "example": "Always asks to see current state before making changes"
+    }
+  ]
+}

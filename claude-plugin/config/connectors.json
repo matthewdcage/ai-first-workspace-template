@@ -1,0 +1,271 @@
+{
+  "version": "1.0.0",
+  "description": "Unified registry of all Claude built-in connectors with workspace-specific configuration",
+  "fallback_mode": "demo",
+  "demo_behavior": "When API credentials are not configured, show realistic mock responses and clearly indicate demo mode",
+  "connectors": {
+    "google_drive": {
+      "enabled": true,
+      "display_name": "Google Drive",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "write", "search", "share"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors",
+        "scopes": ["drive.readonly", "drive.file"]
+      },
+      "workspace_mappings": {
+        "strategy_folder": "[PLACEHOLDER: user - Google Drive folder ID for Strategy docs]",
+        "product_folder": "[PLACEHOLDER: user - Google Drive folder ID for Product docs]",
+        "shared_reports": "[PLACEHOLDER: user - Google Drive folder ID for shared reports]"
+      },
+      "preferred_actions": ["search_documents", "create_doc", "share_with_team"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["document creation", "file search", "sharing", "collaboration"]
+    },
+    "google_docs": {
+      "enabled": true,
+      "display_name": "Google Docs",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "write", "comment", "suggest"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors",
+        "scopes": ["documents.readonly", "documents"]
+      },
+      "workspace_mappings": {
+        "templates_folder": "[PLACEHOLDER: user - Google Docs templates folder]",
+        "meeting_notes_folder": "[PLACEHOLDER: user - Meeting notes folder]"
+      },
+      "preferred_actions": ["create_document", "edit_document", "add_comments"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["document drafting", "meeting notes", "report writing"]
+    },
+    "google_sheets": {
+      "enabled": true,
+      "display_name": "Google Sheets",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "write", "formula", "chart"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors",
+        "scopes": ["spreadsheets.readonly", "spreadsheets"]
+      },
+      "workspace_mappings": {
+        "financial_models": "[PLACEHOLDER: user - Financial models spreadsheet ID]",
+        "metrics_dashboard": "[PLACEHOLDER: user - Metrics dashboard spreadsheet ID]",
+        "hiring_tracker": "[PLACEHOLDER: user - Hiring pipeline tracker ID]"
+      },
+      "preferred_actions": ["read_data", "update_cells", "create_charts"],
+      "usage_frequency": "weekly",
+      "auto_suggestions": true,
+      "context_triggers": ["data analysis", "financial review", "metrics tracking"],
+      "integration_note": "Use scripts/check_range.py for all numerical range validations from sheet data"
+    },
+    "notion": {
+      "enabled": true,
+      "display_name": "Notion",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "write", "database", "search"],
+      "authentication": {
+        "method": "env_variable",
+        "token_var": "NOTION_TOKEN",
+        "database_id_var": "NOTION_DATABASE_ID",
+        "setup_guide": "scripts/notion-integration/README.md"
+      },
+      "workspace_mappings": {
+        "strategy_database": "[PLACEHOLDER: user]",
+        "sales_pipeline": "[PLACEHOLDER: user]",
+        "hiring_tracker": "[PLACEHOLDER: user]",
+        "project_portfolio": "[PLACEHOLDER: user]",
+        "meeting_notes": "[PLACEHOLDER: user]"
+      },
+      "existing_scripts": [
+        "scripts/notion-integration/notion-fetch.py",
+        "scripts/notion-integration/notion-send-meeting-analysis.py",
+        "scripts/notion-integration/setup-notion-integration.py",
+        "scripts/notion-integration/notion-bootstrap.py"
+      ],
+      "sync_settings": {
+        "direction": "bidirectional",
+        "conflict_resolution": "notion_wins",
+        "auto_sync_on_context_switch": true
+      },
+      "preferred_actions": ["search_pages", "update_database", "create_page", "sync_meeting_notes"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["project tracking", "meeting notes", "database queries", "knowledge base"]
+    },
+    "slack": {
+      "enabled": true,
+      "display_name": "Slack",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "write", "search", "react"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors"
+      },
+      "workspace_mappings": {
+        "general_channel": "[PLACEHOLDER: user]",
+        "strategy_channel": "[PLACEHOLDER: user]",
+        "product_channel": "[PLACEHOLDER: user]",
+        "engineering_channel": "[PLACEHOLDER: user]",
+        "alerts_channel": "[PLACEHOLDER: user]"
+      },
+      "preferred_actions": ["search_messages", "post_update", "channel_summary", "thread_reply"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["team communication", "status updates", "announcements", "quick questions"]
+    },
+    "github": {
+      "enabled": true,
+      "display_name": "GitHub",
+      "type": "builtin_connector",
+      "platform": ["desktop", "web"],
+      "capabilities": ["repo", "pr", "issue", "actions"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors"
+      },
+      "workspace_mappings": {
+        "organization": "[PLACEHOLDER: user - GitHub org name]",
+        "workspace_repo": "[PLACEHOLDER: user - SharedWorkspace repo]",
+        "department_repos": {
+          "strategy": "[PLACEHOLDER: user]",
+          "product": "[PLACEHOLDER: user]",
+          "sales_marketing": "[PLACEHOLDER: user]",
+          "operations": "[PLACEHOLDER: user]"
+        }
+      },
+      "preferred_actions": ["view_prs", "create_issue", "review_code", "check_actions"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["code review", "issue tracking", "release management", "repository management"],
+      "integration_note": "Respects workspace Git Workflow Guidelines: NEVER push without explicit user confirmation"
+    },
+    "web_search": {
+      "enabled": true,
+      "display_name": "Web Search & Browse",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["search", "browse", "extract"],
+      "preferred_actions": ["research_topic", "find_competitor_info", "verify_claims", "check_market_data"],
+      "usage_frequency": "as_needed",
+      "auto_suggestions": true,
+      "context_triggers": ["competitive analysis", "market research", "fact verification", "technology research"],
+      "integration_note": "Always tag web-sourced information with [CONFIRMED: web search] or [REF: URL]"
+    },
+    "filesystem": {
+      "enabled": true,
+      "display_name": "File System",
+      "type": "builtin_mcp",
+      "platform": ["desktop"],
+      "capabilities": ["read", "write", "search", "watch"],
+      "workspace_root": "..",
+      "department_paths": {
+        "strategy": "Docs/Strategy/",
+        "product": "Docs/Product/",
+        "sales_marketing": "Docs/SalesAndMarketing/",
+        "operations": "Docs/Operations/",
+        "hiring": "Docs/Operations/Hiring/",
+        "finance": "Docs/Finance/",
+        "legal_hr": "Docs/Legal-HR/",
+        "projects": "Projects/",
+        "dev": "Dev/",
+        "presales": "Presales/"
+      },
+      "preferred_actions": ["read_file", "search_workspace", "list_directory", "create_file"],
+      "usage_frequency": "continuous",
+      "auto_suggestions": false,
+      "context_triggers": ["file access", "document editing", "workspace navigation"]
+    },
+    "code_execution": {
+      "enabled": true,
+      "display_name": "Code Execution",
+      "type": "builtin_capability",
+      "platform": ["desktop"],
+      "capabilities": ["python", "bash", "node"],
+      "existing_scripts": {
+        "check_range": {
+          "path": "scripts/check_range.py",
+          "purpose": "MANDATORY numerical range validation",
+          "usage": "python3 scripts/check_range.py [value] [min] [max] ..."
+        },
+        "meeting_processor": {
+          "path": "scripts/sales-meeting-automation/demo-meeting-processor.py",
+          "purpose": "Process meeting transcripts from Fireflies"
+        },
+        "notion_fetch": {
+          "path": "scripts/notion-integration/notion-fetch.py",
+          "purpose": "Fetch content from Notion pages"
+        },
+        "notion_send": {
+          "path": "scripts/notion-integration/notion-send-meeting-analysis.py",
+          "purpose": "Send meeting analysis to Notion"
+        }
+      },
+      "preferred_actions": ["run_validation", "execute_pipeline", "generate_report"],
+      "usage_frequency": "frequent",
+      "auto_suggestions": false
+    },
+    "calendar": {
+      "enabled": false,
+      "display_name": "Google Calendar",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "create", "update", "availability"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors"
+      },
+      "workspace_mappings": {
+        "primary_calendar": "[PLACEHOLDER: user]",
+        "team_calendar": "[PLACEHOLDER: user]"
+      },
+      "preferred_actions": ["check_schedule", "create_event", "find_availability", "meeting_prep"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["scheduling", "meeting preparation", "availability check", "deadline tracking"],
+      "activation_note": "Set enabled to true after connecting Google Calendar via claude.com/connectors"
+    },
+    "email": {
+      "enabled": false,
+      "display_name": "Gmail",
+      "type": "builtin_connector",
+      "platform": ["desktop", "ios", "web"],
+      "capabilities": ["read", "compose", "search"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors"
+      },
+      "preferred_actions": ["search_emails", "draft_email", "summarize_thread"],
+      "usage_frequency": "daily",
+      "auto_suggestions": true,
+      "context_triggers": ["email drafting", "communication review", "follow-up tracking"],
+      "activation_note": "Set enabled to true after connecting Gmail via claude.com/connectors"
+    },
+    "zapier": {
+      "enabled": false,
+      "display_name": "Zapier / Make",
+      "type": "builtin_connector",
+      "platform": ["web"],
+      "capabilities": ["trigger", "action", "webhook"],
+      "authentication": {
+        "method": "oauth",
+        "setup_url": "https://claude.com/connectors"
+      },
+      "preferred_actions": ["trigger_workflow", "create_automation", "webhook_handler"],
+      "usage_frequency": "as_needed",
+      "auto_suggestions": false,
+      "context_triggers": ["workflow automation", "cross-app integration", "scheduled tasks"],
+      "activation_note": "Set enabled to true after connecting Zapier via claude.com/connectors. Connects Claude to 8000+ apps."
+    }
+  }
+}

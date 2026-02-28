@@ -1,0 +1,219 @@
+{
+  "version": "1.0.0",
+  "description": "Master registry of all skills available in the personalized adaptive plugin",
+  "skill_categories": {
+    "department": {
+      "description": "Department-specific operational skills aligned with workspace departments",
+      "directory": "department/",
+      "skills": [
+        {
+          "id": "strategy-analysis",
+          "file": "department/strategy-skills.md",
+          "department": "strategy",
+          "display_name": "Strategy Analysis",
+          "triggers": [
+            "competitive analysis", "market research", "strategic planning",
+            "pitch deck", "investor update", "executive briefing",
+            "market sizing", "business model", "positioning"
+          ],
+          "required_context": ["Docs/Strategy/.cursorrules"],
+          "connectors_used": ["web_search", "filesystem", "google_sheets"],
+          "complexity": "high",
+          "typical_duration": "15-30min",
+          "outputs": ["markdown_report", "comparison_table", "executive_summary"]
+        },
+        {
+          "id": "product-planning",
+          "file": "department/product-skills.md",
+          "department": "product",
+          "display_name": "Product Planning",
+          "triggers": [
+            "roadmap", "feature spec", "user research", "product vision",
+            "spec writing", "feature prioritization", "user story",
+            "product requirements", "technical specification"
+          ],
+          "required_context": [],
+          "connectors_used": ["filesystem", "github", "notion"],
+          "complexity": "high",
+          "typical_duration": "20-45min",
+          "outputs": ["spec_document", "roadmap_update", "research_synthesis"]
+        },
+        {
+          "id": "sales-marketing",
+          "file": "department/sales-marketing-skills.md",
+          "department": "sales_marketing",
+          "display_name": "Sales & Marketing",
+          "triggers": [
+            "meeting prep", "campaign design", "lead scoring",
+            "testimonial", "client prep", "discovery call",
+            "pipeline review", "content creation", "go-to-market"
+          ],
+          "required_context": ["Docs/SalesAndMarketing/.cursorrules"],
+          "connectors_used": ["filesystem", "notion", "slack", "calendar"],
+          "existing_scripts": ["scripts/sales-meeting-automation/demo-meeting-processor.py"],
+          "complexity": "medium",
+          "typical_duration": "10-20min",
+          "outputs": ["meeting_brief", "campaign_plan", "content_draft"]
+        },
+        {
+          "id": "operations-management",
+          "file": "department/operations-skills.md",
+          "department": "operations",
+          "display_name": "Operations Management",
+          "triggers": [
+            "candidate screening", "hiring pipeline", "process improvement",
+            "operational review", "team metrics", "process documentation",
+            "evaluate candidate", "screening", "interview assessment"
+          ],
+          "required_context": ["Docs/Operations/.cursorrules"],
+          "connectors_used": ["filesystem", "google_sheets", "slack", "notion"],
+          "existing_agents": [
+            "Docs/Operations/Hiring/Job-Openings/Senior-Marketing-Analyst/Screening-Agent/",
+            "Docs/Operations/Hiring/Job-Openings/Senior-Marketing-Analyst/Full Evaluation Agent/"
+          ],
+          "complexity": "high",
+          "typical_duration": "15-40min",
+          "outputs": ["evaluation_report", "metrics_dashboard", "process_doc"]
+        },
+        {
+          "id": "financial-analysis",
+          "file": "department/finance-skills.md",
+          "department": "finance",
+          "display_name": "Financial Analysis",
+          "triggers": [
+            "financial model", "budget review", "investor update",
+            "pricing", "unit economics", "projection", "revenue analysis",
+            "cash flow", "financial summary"
+          ],
+          "required_context": [],
+          "connectors_used": ["filesystem", "google_sheets", "code_execution"],
+          "mandatory_tool": "scripts/check_range.py",
+          "complexity": "high",
+          "typical_duration": "20-30min",
+          "outputs": ["financial_report", "projection_model", "budget_analysis"]
+        }
+      ]
+    },
+    "connector": {
+      "description": "Skills for effectively operating specific connectors",
+      "directory": "connector/",
+      "skills": [
+        {
+          "id": "google-workspace",
+          "file": "connector/google-workspace-skills.md",
+          "display_name": "Google Workspace",
+          "connectors": ["google_drive", "google_docs", "google_sheets"],
+          "triggers": [
+            "google drive", "gdrive", "shared drive", "google doc",
+            "spreadsheet", "google sheets", "create document",
+            "share file", "find document"
+          ],
+          "complexity": "low",
+          "outputs": ["document", "spreadsheet", "shared_link"]
+        },
+        {
+          "id": "notion-management",
+          "file": "connector/notion-skills.md",
+          "display_name": "Notion Management",
+          "connectors": ["notion"],
+          "triggers": [
+            "sync notion", "notion update", "notion page", "notion database",
+            "create notion page", "search notion", "notion query"
+          ],
+          "existing_scripts": [
+            "scripts/notion-integration/notion-fetch.py",
+            "scripts/notion-integration/notion-send-meeting-analysis.py"
+          ],
+          "complexity": "medium",
+          "outputs": ["notion_page", "database_entry", "sync_report"]
+        },
+        {
+          "id": "slack-communication",
+          "file": "connector/slack-skills.md",
+          "display_name": "Slack Communication",
+          "connectors": ["slack"],
+          "triggers": [
+            "notify team", "slack message", "post to channel",
+            "channel summary", "slack digest", "thread reply"
+          ],
+          "complexity": "low",
+          "outputs": ["message", "channel_digest", "thread_summary"]
+        },
+        {
+          "id": "github-workflow",
+          "file": "connector/github-skills.md",
+          "display_name": "GitHub Workflow",
+          "connectors": ["github"],
+          "triggers": [
+            "pull request", "code review", "create issue",
+            "check actions", "release notes", "repository"
+          ],
+          "complexity": "medium",
+          "outputs": ["pr_review", "issue", "release_notes"]
+        },
+        {
+          "id": "data-platforms",
+          "file": "connector/data-platform-skills.md",
+          "display_name": "Data Platforms",
+          "connectors": ["google_sheets", "code_execution"],
+          "triggers": [
+            "analytics", "dashboard", "data export", "metrics",
+            "trend analysis", "data pipeline", "report generation"
+          ],
+          "complexity": "high",
+          "outputs": ["analytics_report", "dashboard", "data_export"]
+        }
+      ]
+    },
+    "cross_functional": {
+      "description": "Skills that span multiple departments and connectors",
+      "directory": "cross-functional/",
+      "skills": [
+        {
+          "id": "meeting-intelligence",
+          "file": "cross-functional/meeting-intelligence.md",
+          "display_name": "Meeting Intelligence",
+          "triggers": [
+            "meeting prep", "analyze meeting", "transcript", "call summary",
+            "action items", "meeting follow-up", "meeting notes",
+            "pre-meeting briefing", "post-meeting summary"
+          ],
+          "connectors_used": ["filesystem", "calendar", "notion", "slack", "email"],
+          "existing_scripts": ["scripts/sales-meeting-automation/demo-meeting-processor.py"],
+          "existing_data_paths": ["Projects/Transcripts/", "Projects/Fireflies-Transcripts/"],
+          "complexity": "medium",
+          "typical_duration": "5-15min",
+          "outputs": ["meeting_brief", "action_items", "follow_up_email"]
+        },
+        {
+          "id": "document-lifecycle",
+          "file": "cross-functional/document-lifecycle.md",
+          "display_name": "Document Lifecycle",
+          "triggers": [
+            "create document", "write report", "draft memo",
+            "review document", "distribute document", "share report"
+          ],
+          "connectors_used": ["filesystem", "google_docs", "notion", "slack", "email"],
+          "enforces": ["canonical_tags", "reference_tags", "source_tracking"],
+          "complexity": "medium",
+          "typical_duration": "10-30min",
+          "outputs": ["document", "review_feedback", "distribution_confirmation"]
+        },
+        {
+          "id": "research-synthesis",
+          "file": "cross-functional/research-synthesis.md",
+          "display_name": "Research Synthesis",
+          "triggers": [
+            "research", "competitive analysis", "market analysis",
+            "synthesize findings", "literature review", "industry analysis"
+          ],
+          "connectors_used": ["web_search", "filesystem", "notion", "google_drive"],
+          "output_path": "Docs/Strategy/Competitors/",
+          "complexity": "high",
+          "typical_duration": "20-45min",
+          "outputs": ["research_report", "comparison_matrix", "executive_brief"]
+        }
+      ]
+    }
+  }
+}

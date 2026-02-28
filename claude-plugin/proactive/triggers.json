@@ -1,0 +1,126 @@
+{
+  "version": "1.0.0",
+  "description": "Event-based triggers for proactive actions. Each trigger defines a condition, the suggestion to make, and the required confidence level.",
+  "triggers": [
+    {
+      "id": "trigger_morning_briefing",
+      "category": "pattern",
+      "condition": "first_session_of_day AND current_time >= working_hours_start",
+      "suggestion": "Good morning! Want me to run your daily briefing? (workspace sync + calendar + Slack digest + pending items)",
+      "action": "Execute scripts/workflows/morning-briefing.py",
+      "skill": null,
+      "connectors_required": ["filesystem", "calendar", "slack"],
+      "confidence_required": 0.60,
+      "effort": "quick",
+      "enabled": true
+    },
+    {
+      "id": "trigger_meeting_prep",
+      "category": "calendar",
+      "condition": "calendar.next_meeting.in_minutes <= 30 AND calendar.next_meeting.attendees.count > 0",
+      "suggestion": "You have a meeting with {attendees} in {minutes} minutes. Want me to prepare a briefing?",
+      "action": null,
+      "skill": "meeting-intelligence",
+      "connectors_required": ["calendar", "filesystem", "notion"],
+      "confidence_required": 0.50,
+      "effort": "moderate",
+      "enabled": true
+    },
+    {
+      "id": "trigger_stale_project",
+      "category": "gap",
+      "condition": "any_project_status_card.last_updated > 14_days",
+      "suggestion": "Project status card for {project_name} hasn't been updated since {last_date}. Want to review and update?",
+      "action": null,
+      "skill": "operations-management",
+      "connectors_required": ["filesystem", "notion"],
+      "confidence_required": 0.90,
+      "effort": "moderate",
+      "enabled": true
+    },
+    {
+      "id": "trigger_broken_refs",
+      "category": "gap",
+      "condition": "cross_reference_index.broken_references.count > 0",
+      "suggestion": "Found {count} broken [REF:] cross-references in the workspace. Want me to list them?",
+      "action": "List broken references from workspace-context.json cross_reference_index",
+      "skill": "document-lifecycle",
+      "connectors_required": ["filesystem"],
+      "confidence_required": 0.90,
+      "effort": "quick",
+      "enabled": true
+    },
+    {
+      "id": "trigger_stale_placeholders",
+      "category": "gap",
+      "condition": "any_placeholder_tag.age_days > 14",
+      "suggestion": "{count} [PLACEHOLDER:] tags haven't been filled in over 2 weeks. Want to review them?",
+      "action": "List stale placeholders from workspace scan",
+      "skill": "document-lifecycle",
+      "connectors_required": ["filesystem"],
+      "confidence_required": 0.90,
+      "effort": "quick",
+      "enabled": true
+    },
+    {
+      "id": "trigger_weekly_review",
+      "category": "pattern",
+      "condition": "day_of_week == monday AND weekly_review.last_run > 7_days",
+      "suggestion": "It's Monday — want me to generate the weekly cross-department review?",
+      "action": "Execute scripts/workflows/weekly-review.py",
+      "skill": null,
+      "connectors_required": ["filesystem"],
+      "confidence_required": 0.70,
+      "effort": "moderate",
+      "enabled": true
+    },
+    {
+      "id": "trigger_uncommitted_changes",
+      "category": "context",
+      "condition": "session.files_modified.count > 0 AND session.idle_minutes > 10",
+      "suggestion": "You've modified {count} files this session. Would you like to review and commit?",
+      "action": "git status review",
+      "skill": null,
+      "connectors_required": ["filesystem"],
+      "confidence_required": 0.60,
+      "effort": "quick",
+      "enabled": true
+    },
+    {
+      "id": "trigger_competitor_news",
+      "category": "context",
+      "condition": "active_department == strategy AND session.topic contains competitor",
+      "suggestion": "Want me to check for recent news about {competitor_name}?",
+      "action": null,
+      "skill": "research-synthesis",
+      "connectors_required": ["web_search"],
+      "confidence_required": 0.50,
+      "effort": "moderate",
+      "enabled": true
+    },
+    {
+      "id": "trigger_candidates_awaiting",
+      "category": "context",
+      "condition": "active_department == hiring AND candidates_awaiting_evaluation > 0",
+      "suggestion": "{count} candidates are awaiting evaluation for {position}. Start evaluating?",
+      "action": null,
+      "skill": "operations-management",
+      "connectors_required": ["filesystem", "notion"],
+      "confidence_required": 0.70,
+      "effort": "significant",
+      "enabled": true
+    },
+    {
+      "id": "trigger_automation_opportunity",
+      "category": "trend",
+      "condition": "same_manual_task_observed >= 5_times_in_30_days",
+      "suggestion": "I've noticed you manually {task_description} frequently ({count} times in 30 days). Want me to create an automation?",
+      "action": null,
+      "skill": null,
+      "connectors_required": ["code_execution"],
+      "confidence_required": 0.70,
+      "effort": "significant",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-02-28T03:00:03.259656",
+  "last_sync": "2026-02-28T03:00:03.259650",
+  "active_department": null,
+  "active_department_cursorrules": null,
+  "active_project": null,
+  "recent_departments": [],
+  "recent_files_accessed": [],
+  "recent_skills_used": [],
+  "pending_items": {
+    "stale_documents": [],
+    "broken_references": [],
+    "unfilled_placeholders": [],
+    "pending_reviews": []
+  },
+  "connector_status": {
+    "google_drive": {
+      "connected": false,
+      "last_used": null
+    },
+    "google_docs": {
+      "connected": false,
+      "last_used": null
+    },
+    "google_sheets": {
+      "connected": false,
+      "last_used": null
+    },
+    "notion": {
+      "connected": false,
+      "last_used": null
+    },
+    "slack": {
+      "connected": false,
+      "last_used": null
+    },
+    "github": {
+      "connected": false,
+      "last_used": null
+    },
+    "web_search": {
+      "connected": true,
+      "last_used": null
+    },
+    "filesystem": {
+      "connected": true,
+      "last_used": null
+    },
+    "code_execution": {
+      "connected": true,
+      "last_used": null
+    },
+    "calendar": {
+      "connected": false,
+      "last_used": null
+    },
+    "email": {
+      "connected": false,
+      "last_used": null
+    },
+    "zapier": {
+      "connected": false,
+      "last_used": null
+    }
+  },
+  "cross_reference_index": {
+    "canonical_definitions": {},
+    "reference_graph": {},
+    "broken_references": [],
+    "last_indexed": null
+  },
+  "department_activity": {
+    "strategy": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    },
+    "product": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    },
+    "sales_marketing": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    },
+    "operations": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    },
+    "hiring": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    },
+    "finance": {
+      "last_accessed": null,
+      "session_count": 0,
+      "total_minutes": 0
+    }
+  }
+}

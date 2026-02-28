@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "description": "History of all adaptations made by the learning system, with user feedback and confidence impact tracking.",
+  "log": [],
+  "entry_schema": {
+    "id": "adapt_XXXXXX",
+    "date": "ISO8601",
+    "type": "preference_applied | pattern_suggested | proactive_offered | format_adapted | connector_selected",
+    "source_id": "ID of the preference or pattern that triggered this adaptation",
+    "description": "What adaptation was made",
+    "context": "Department and task context",
+    "outcome": "accepted | rejected | modified | ignored | pending",
+    "user_feedback": "Any explicit feedback from the user",
+    "confidence_before": "float",
+    "confidence_after": "float"
+  },
+  "aggregate_metrics": {
+    "total_adaptations": 0,
+    "acceptance_rate": null,
+    "rejection_rate": null,
+    "modification_rate": null,
+    "by_category": {}
+  }
+}

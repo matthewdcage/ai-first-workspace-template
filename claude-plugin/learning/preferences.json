@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "description": "Explicit user preferences. These are set directly by the user and have confidence 1.0. They never decay.",
+  "preferences": [
+    {
+      "id": "pref_workspace_001",
+      "category": "numerical_validation",
+      "preference": "Always use scripts/check_range.py for all numerical range comparisons — never do mental math",
+      "context": "global",
+      "confidence": 1.0,
+      "source": "workspace_rule",
+      "set_date": "2026-02-28",
+      "notes": "Inherited from workspace .cursorrules — this is a mandatory workspace rule"
+    },
+    {
+      "id": "pref_workspace_002",
+      "category": "content_quality",
+      "preference": "All claims must be sourced with [CANONICAL], [REF:], or [CONFIRMED:] tags. No orphan statements allowed.",
+      "context": "global",
+      "confidence": 1.0,
+      "source": "workspace_rule",
+      "set_date": "2026-02-28",
+      "notes": "Inherited from workspace information architecture rules"
+    },
+    {
+      "id": "pref_workspace_003",
+      "category": "communication_style",
+      "preference": "Default language is English (US) for all company-wide documentation",
+      "context": "global",
+      "confidence": 1.0,
+      "source": "workspace_rule",
+      "set_date": "2026-02-28",
+      "notes": "Inherited from workspace language policy"
+    },
+    {
+      "id": "pref_workspace_004",
+      "category": "git_workflow",
+      "preference": "Never push to repositories without explicit user confirmation. Never commit until user indicates work is complete.",
+      "context": "global",
+      "confidence": 1.0,
+      "source": "workspace_rule",
+      "set_date": "2026-02-28",
+      "notes": "Inherited from workspace Git Workflow Guidelines"
+    }
+  ],
+  "categories": [
+    "response_format",
+    "communication_style",
+    "tool_preferences",
+    "department_defaults",
+    "notification_preferences",
+    "scheduling_preferences",
+    "content_preferences",
+    "content_quality",
+    "numerical_validation",
+    "git_workflow"
+  ]
+}
