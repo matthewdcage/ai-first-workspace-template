@@ -15,7 +15,27 @@ This folder is documentation only. The MCP server itself lives in your home dire
 
 ---
 
-## 1. Install the server
+## Fast path — one-shot installer
+
+If you just want it working:
+
+**Mac / Linux:**
+```bash
+bash scripts/tradingview-mcp/install.sh
+```
+
+**Windows:**
+```powershell
+.\scripts\tradingview-mcp\install.ps1
+```
+
+The installer clones the server to `~/tradingview-mcp-jackson`, runs `npm install` and `npm link`, copies `rules.example.json` to `rules.json` if needed, and prints pre-filled MCP registration snippets for all three clients (Claude Code, Claude Desktop, Cursor). Idempotent — safe to re-run; pulls latest if the repo's already there.
+
+If you'd rather do it manually, continue with steps 1-5 below.
+
+---
+
+## 1. Install the server (manual)
 
 ```bash
 git clone https://github.com/LewisWJackson/tradingview-mcp-jackson.git ~/tradingview-mcp-jackson

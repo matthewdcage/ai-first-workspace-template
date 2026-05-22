@@ -16,6 +16,10 @@ This folder is documentation only. The plugin installs into Claude Code's plugin
 
 ---
 
+## Fast path
+
+The install is already two slash commands — see [`install.md`](install.md) for the crib-sheet. Long form below.
+
 ## 1. Install the plugin
 
 **Recommended — marketplace install:**
