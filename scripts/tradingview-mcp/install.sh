@@ -2,12 +2,26 @@
 # One-shot installer for the TradingView MCP server (Mac / Linux).
 # Idempotent — safe to re-run; pulls latest if already installed.
 #
-# Usage:  bash scripts/tradingview-mcp/install.sh
+# Usage:
+#   bash scripts/tradingview-mcp/install.sh
+#       → installs to $HOME/tradingview-mcp-jackson (default)
+#
+#   bash scripts/tradingview-mcp/install.sh ~/Documents/agent-trading-view
+#       → installs to the given directory
+#
+#   TARGET_DIR=~/Documents/agent-trading-view bash scripts/tradingview-mcp/install.sh
+#       → same, via env var
 set -euo pipefail
 
 REPO_URL="https://github.com/LewisWJackson/tradingview-mcp-jackson.git"
-INSTALL_DIR="$HOME/tradingview-mcp-jackson"
+
+# Resolve install dir: positional arg > env var > default.
+INSTALL_DIR="${1:-${TARGET_DIR:-$HOME/tradingview-mcp-jackson}}"
+# Expand ~ if user passed a literal "~/..." string
+INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
 SERVER_PATH="$INSTALL_DIR/src/server.js"
+
+echo "[info] target directory: $INSTALL_DIR"
 
 # ----- 1. Node version check ----------------------------------------------
 if ! command -v node >/dev/null 2>&1; then
@@ -26,6 +40,8 @@ if [ -d "$INSTALL_DIR/.git" ]; then
   echo "[info] $INSTALL_DIR exists — pulling latest"
   git -C "$INSTALL_DIR" pull --ff-only
 else
+  # Ensure parent dir exists (e.g. ~/Documents)
+  mkdir -p "$(dirname "$INSTALL_DIR")"
   echo "[info] cloning $REPO_URL -> $INSTALL_DIR"
   git clone "$REPO_URL" "$INSTALL_DIR"
 fi
@@ -53,7 +69,8 @@ fi
 cat <<EOF
 
 ================================================================
- Install complete. Register the server with your Claude client(s):
+ Install complete at: $INSTALL_DIR
+ Register the server with your Claude client(s):
 ================================================================
 
 [A] Claude Code  — ~/.claude/.mcp.json  (merge into "mcpServers"):
@@ -77,10 +94,12 @@ cat <<EOF
 
 ================================================================
  Next steps:
-   1. Launch TradingView with the CDP debug port:
+   1. Make sure TradingView Desktop is installed and you're signed in
+      (the server reads whichever account is logged in on the desktop app).
+   2. Launch TradingView with the CDP debug port:
         Mac:   $INSTALL_DIR/scripts/launch_tv_debug_mac.sh
         Linux: $INSTALL_DIR/scripts/launch_tv_debug_linux.sh
-   2. Verify connection:
+   3. Verify connection:
         tv status
       Expect: {"success": true, ..., "cdp_connected": true}
 ================================================================

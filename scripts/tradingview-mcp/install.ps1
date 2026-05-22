@@ -1,16 +1,26 @@
 # One-shot installer for the TradingView MCP server (Windows).
 # Idempotent - safe to re-run; pulls latest if already installed.
 #
-# Usage:  pwsh -File scripts\tradingview-mcp\install.ps1
-#   (or in PowerShell:  .\scripts\tradingview-mcp\install.ps1)
+# Usage:
+#   .\scripts\tradingview-mcp\install.ps1
+#       Installs to %USERPROFILE%\tradingview-mcp-jackson (default)
+#
+#   .\scripts\tradingview-mcp\install.ps1 -TargetDir "$env:USERPROFILE\Documents\agent-trading-view"
+#       Installs to the given directory.
+
+param(
+    [string]$TargetDir = (Join-Path $env:USERPROFILE 'tradingview-mcp-jackson')
+)
 
 $ErrorActionPreference = 'Stop'
 
 $RepoUrl    = 'https://github.com/LewisWJackson/tradingview-mcp-jackson.git'
-$InstallDir = Join-Path $env:USERPROFILE 'tradingview-mcp-jackson'
+$InstallDir = $TargetDir
 $ServerPath = Join-Path $InstallDir 'src\server.js'
 # JSON requires double-escaped backslashes
 $JsonPath   = $ServerPath -replace '\\', '\\'
+
+Write-Host "[info] target directory: $InstallDir"
 
 # ----- 1. Node version check ---------------------------------------------
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
@@ -29,6 +39,10 @@ if (Test-Path (Join-Path $InstallDir '.git')) {
     Write-Host "[info] $InstallDir exists - pulling latest"
     git -C $InstallDir pull --ff-only
 } else {
+    $parent = Split-Path -Parent $InstallDir
+    if (-not (Test-Path $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
     Write-Host "[info] cloning $RepoUrl -> $InstallDir"
     git clone $RepoUrl $InstallDir
 }
@@ -61,7 +75,8 @@ if (-not (Test-Path $RulesPath)) {
 @"
 
 ================================================================
- Install complete. Register the server with your Claude client(s):
+ Install complete at: $InstallDir
+ Register the server with your Claude client(s):
 ================================================================
 
 [A] Claude Code  - %USERPROFILE%\.claude\.mcp.json  (merge into "mcpServers"):
@@ -84,9 +99,11 @@ if (-not (Test-Path $RulesPath)) {
 
 ================================================================
  Next steps:
-   1. Launch TradingView with the CDP debug port:
+   1. Make sure TradingView Desktop is installed and you're signed in
+      (the server reads whichever account is logged in on the desktop app).
+   2. Launch TradingView with the CDP debug port:
         $InstallDir\scripts\launch_tv_debug.bat
-   2. Verify connection:
+   3. Verify connection:
         tv status
       Expect: {"success": true, ..., "cdp_connected": true}
 ================================================================
