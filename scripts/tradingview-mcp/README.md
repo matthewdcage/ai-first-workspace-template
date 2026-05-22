@@ -104,11 +104,11 @@ CLI check (requires `npm link`):
 tv status
 ```
 
+Returns a JSON object. On success: `{"success": true, ...}` with `cdp_connected: true`. On failure (e.g. TradingView not running): `{"success": false, "error": "CDP connection failed after 5 attempts: fetch failed"}` — see Troubleshooting below.
+
 In-Claude check — paste:
 
 > Use `tv_health_check` to confirm the MCP connection.
-
-Expected payload includes `cdp_connected: true`. If it's `false`, see Troubleshooting below.
 
 ---
 
@@ -157,7 +157,8 @@ Internally: `replay_start` → `replay_step` → `replay_trade` → `replay_stat
 
 | Problem | Fix |
 |---|---|
-| `cdp_connected: false` | TradingView isn't running with `--remote-debugging-port=9222`. Re-launch via the script in step 2. |
+| `CDP connection failed after N attempts: fetch failed` | TradingView isn't running with `--remote-debugging-port=9222`. Re-launch via the script in step 2. |
+| `cdp_connected: false` | Same root cause — TradingView started without the CDP port. |
 | `ECONNREFUSED` | TradingView not running, or port 9222 is blocked by a firewall. |
 | MCP server missing from Claude's tool list | Check `~/.claude/.mcp.json` (or the equivalent for Desktop / Cursor) is valid JSON and restart the client. |
 | `tv` command not found | Run `npm link` from `~/tradingview-mcp-jackson`. |
