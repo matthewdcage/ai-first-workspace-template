@@ -1,4 +1,5 @@
 import AppIntents
+import CoreSpotlight
 import Foundation
 
 /// AppEntity definitions that make Hermes content discoverable to Siri,
@@ -30,8 +31,8 @@ struct ChatSessionEntity: AppEntity, IndexedEntity {
     let lastMessagePreview: String
     let updatedAt: Date
 
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Hermes Chat"
-    static var defaultQuery = ChatSessionEntityQuery()
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Hermes Chat"
+    static let defaultQuery = ChatSessionEntityQuery()
 
     var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(
@@ -43,8 +44,8 @@ struct ChatSessionEntity: AppEntity, IndexedEntity {
 
     // IndexedEntity: contributes this entity to Spotlight's on-device
     // semantic index so Siri/Spotlight can resolve "that chat about X."
-    var attributeSet: CSSearchableItemAttributeSetProxy {
-        var attrs = CSSearchableItemAttributeSetProxy()
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attrs = CSSearchableItemAttributeSet(contentType: .text)
         attrs.title = title
         attrs.contentDescription = lastMessagePreview
         attrs.contentModificationDate = updatedAt
@@ -70,8 +71,8 @@ struct HermesSkillEntity: AppEntity {
     let name: String
     let summary: String
 
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "Hermes Skill"
-    static var defaultQuery = HermesSkillEntityQuery()
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Hermes Skill"
+    static let defaultQuery = HermesSkillEntityQuery()
 
     var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(title: "\(name)", subtitle: "\(summary)")
@@ -123,7 +124,7 @@ actor HermesSessionStore {
 
     private func refreshIfNeeded() async {
         if let last = lastRefresh, Date().timeIntervalSince(last) < 300 { return }
-        guard let base = ServerConfig.shared.baseURL else { return }
+        guard let base = await ServerConfig.shared.baseURL else { return }
 
         async let sessionsTask = fetchSessions(base: base)
         async let skillsTask = fetchSkills(base: base)
@@ -135,8 +136,8 @@ actor HermesSessionStore {
     }
 
     private func fetchSessions(base: URL) async -> [ChatSessionEntity]? {
-        var request = URLRequest(url: base.appendingPathComponent("/api/hermes/sessions"))
-        applyAuth(&request)
+        var request = URLRequest(url: base.appendingHermesPath("api/hermes/sessions"))
+        await applyAuth(&request)
         guard let (data, _) = try? await URLSession.shared.data(for: request),
               let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return nil }
         return json.compactMap { entry in
@@ -148,8 +149,8 @@ actor HermesSessionStore {
     }
 
     private func fetchSkills(base: URL) async -> [HermesSkillEntity]? {
-        var request = URLRequest(url: base.appendingPathComponent("/api/hermes/skills"))
-        applyAuth(&request)
+        var request = URLRequest(url: base.appendingHermesPath("api/hermes/skills"))
+        await applyAuth(&request)
         guard let (data, _) = try? await URLSession.shared.data(for: request),
               let json = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return nil }
         return json.compactMap { entry in
@@ -158,12 +159,7 @@ actor HermesSessionStore {
         }
     }
 
-    private func applyAuth(_ request: inout URLRequest) {
-        let token = ServerConfig.shared.hermesAuthToken
-        if !token.isEmpty { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
-        if !ServerConfig.shared.cfClientId.isEmpty {
-            request.setValue(ServerConfig.shared.cfClientId, forHTTPHeaderField: "CF-Access-Client-Id")
-            request.setValue(ServerConfig.shared.cfClientSecret, forHTTPHeaderField: "CF-Access-Client-Secret")
-        }
+    private func applyAuth(_ request: inout URLRequest) async {
+        await ServerConfig.shared.applyAuthentication(to: &request)
     }
 }

@@ -1,4 +1,5 @@
 import UserNotifications
+import WebKit
 
 /// Rich, actionable notification categories — lets a user reply to a
 /// Hermes update or jump straight to a chat session from the lock screen
@@ -13,19 +14,19 @@ enum NotificationCategories {
     static func registerAll() {
         let reply = UNTextInputNotificationAction(
             identifier: replyAction,
-            title: "Reply",
+            title: String(localized: "notification.action.reply"),
             options: [],
-            textInputButtonTitle: "Send",
-            textInputPlaceholder: "Message Hermes…"
+            textInputButtonTitle: String(localized: "notification.action.reply_button"),
+            textInputPlaceholder: String(localized: "notification.action.reply_placeholder")
         )
         let open = UNNotificationAction(
             identifier: openAction,
-            title: "Open Chat",
+            title: String(localized: "notification.action.open_chat"),
             options: [.foreground]
         )
         let dismiss = UNNotificationAction(
             identifier: dismissAction,
-            title: "Dismiss",
+            title: String(localized: "notification.action.dismiss"),
             options: [.destructive]
         )
 
@@ -41,6 +42,7 @@ enum NotificationCategories {
 
     /// Handles the action tapped by the user; call from
     /// `userNotificationCenter(_:didReceive:withCompletionHandler:)`.
+    @MainActor
     static func handle(response: UNNotificationResponse, sessionId: String?, webView: WKWebView?) {
         switch response.actionIdentifier {
         case replyAction:
@@ -51,12 +53,10 @@ enum NotificationCategories {
             }
         case openAction, UNNotificationDefaultActionIdentifier:
             guard let sessionId, let base = ServerConfig.shared.baseURL else { return }
-            let url = base.appendingPathComponent("/chat/\(sessionId)")
-            webView?.load(URLRequest(url: url))
+            let url = base.appendingHermesPath("chat/\(sessionId)")
+            DeepLinkManager.shared.storeOrLoad(url: url, webView: webView)
         default:
             break
         }
     }
 }
-
-import WebKit

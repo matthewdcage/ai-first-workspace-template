@@ -7,6 +7,7 @@ import Foundation
 enum HandoffManager {
     static let chatActivityType = "au.aiadvantage.HermesApp.chat"
 
+    @MainActor
     static func makeChatActivity(sessionId: String, title: String) -> NSUserActivity {
         let activity = NSUserActivity(activityType: chatActivityType)
         activity.title = title
@@ -15,17 +16,18 @@ enum HandoffManager {
         activity.isEligibleForSearch = true
         activity.isEligibleForPrediction = true // helps Siri Suggestions surface it proactively
         activity.persistentIdentifier = "chat-\(sessionId)"
-        activity.webpageURL = ServerConfig.shared.baseURL?.appendingPathComponent("/chat/\(sessionId)")
+        activity.webpageURL = ServerConfig.shared.baseURL?.appendingHermesPath("chat/\(sessionId)")
         return activity
     }
 
     /// Called from scene(_:continue:) on both iOS and macOS.
+    @MainActor
     static func resolve(_ userActivity: NSUserActivity) -> URL? {
         guard userActivity.activityType == chatActivityType,
               let sessionId = userActivity.userInfo?["sessionId"] as? String,
               let base = ServerConfig.shared.baseURL else {
             return userActivity.webpageURL
         }
-        return base.appendingPathComponent("/chat/\(sessionId)")
+        return base.appendingHermesPath("chat/\(sessionId)")
     }
 }

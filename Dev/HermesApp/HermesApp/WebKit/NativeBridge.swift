@@ -7,7 +7,20 @@ import AVFoundation
 /// into webkit.messageHandlers.<name>.postMessage(payload).
 final class NativeBridge: NSObject, WKScriptMessageHandler {
 
-    static let handlerNames = ["share", "speak", "requestFile", "scheduleNotification", "onDeviceAI"]
+    static let handlerNames = [
+        "share",
+        "speak",
+        "stopSpeaking",
+        "startListening",
+        "stopListening",
+        "requestFile",
+        "scheduleNotification",
+        "onDeviceAI",
+        "preprocessMessage",
+        "classifyIntent",
+        "nativeStatus",
+        "requestPermissions"
+    ]
 
     weak var coordinator: HermesWebViewCoordinator?
 
@@ -26,18 +39,40 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
             if let text = body["text"] as? String { handleShare(text: text) }
         case "speak":
             if let text = body["text"] as? String { SpeechBridge.shared.speak(text) }
+        case "stopSpeaking":
+            SpeechBridge.shared.stopSpeaking()
+        case "startListening":
+            let callbackId = body["callbackId"] as? String ?? ""
+            SpeechBridge.shared.webView = coordinator?.webView
+            SpeechBridge.shared.startListening(callbackId: callbackId)
+        case "stopListening":
+            SpeechBridge.shared.stopListening()
         case "requestFile":
             let callbackId = body["callbackId"] as? String ?? ""
             handleFileRequest(callbackId: callbackId)
         case "scheduleNotification":
             let title = body["title"] as? String ?? "Hermes"
             let body2 = body["body"] as? String ?? ""
-            let delay = body["delay"] as? TimeInterval ?? 0
+            let delay = (body["delay"] as? NSNumber)?.doubleValue ?? body["delay"] as? TimeInterval ?? 0
             NotificationManager.shared.schedule(title: title, body: body2, delay: delay)
         case "onDeviceAI":
             let prompt = body["prompt"] as? String ?? ""
             let callbackId = body["callbackId"] as? String ?? ""
             Task { await handleOnDeviceAI(prompt: prompt, callbackId: callbackId) }
+        case "preprocessMessage":
+            let message = body["message"] as? String ?? ""
+            let callbackId = body["callbackId"] as? String ?? ""
+            Task { await handlePreprocess(message: message, callbackId: callbackId) }
+        case "classifyIntent":
+            let message = body["message"] as? String ?? ""
+            let callbackId = body["callbackId"] as? String ?? ""
+            handleClassifyIntent(message: message, callbackId: callbackId)
+        case "nativeStatus":
+            let callbackId = body["callbackId"] as? String ?? ""
+            Task { @MainActor in handleNativeStatus(callbackId: callbackId) }
+        case "requestPermissions":
+            let callbackId = body["callbackId"] as? String ?? ""
+            Task { await handlePermissionRequest(callbackId: callbackId) }
         default:
             break
         }
@@ -50,31 +85,49 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
     window.hermesNative = (function() {
         function post(name, payload) {
             if (window.webkit && window.webkit.messageHandlers[name]) {
-                window.webkit.messageHandlers[name].postMessage(payload);
+                window.webkit.messageHandlers[name].postMessage(payload || {});
+                return true;
             }
+            return false;
         }
         let _callbacks = {};
         window._hermesCallback = function(id, result) {
-            if (_callbacks[id]) { _callbacks[id](result); delete _callbacks[id]; }
+            if (_callbacks[id]) {
+                _callbacks[id].resolve(result);
+                delete _callbacks[id];
+            }
         };
         function callWithCallback(name, payload) {
-            return new Promise(function(resolve) {
+            return new Promise(function(resolve, reject) {
                 const id = Math.random().toString(36).slice(2);
-                _callbacks[id] = resolve;
+                _callbacks[id] = { resolve: resolve, reject: reject };
+                payload = payload || {};
                 payload.callbackId = id;
-                post(name, payload);
+                if (!post(name, payload)) {
+                    delete _callbacks[id];
+                    reject(new Error('Hermes native bridge is unavailable.'));
+                }
             });
         }
-        return {
+        const api = {
             isNative: true,
             shareText: function(text) { post('share', {text: text}); },
             speak: function(text) { post('speak', {text: text}); },
+            stopSpeaking: function() { post('stopSpeaking', {}); },
+            startListening: function() { return callWithCallback('startListening', {}); },
+            stopListening: function() { post('stopListening', {}); },
             requestFile: function() { return callWithCallback('requestFile', {}); },
             scheduleNotification: function(title, body, delay) {
                 post('scheduleNotification', {title: title, body: body, delay: delay || 0});
             },
-            onDeviceAI: function(prompt) { return callWithCallback('onDeviceAI', {prompt: prompt}); }
+            onDeviceAI: function(prompt) { return callWithCallback('onDeviceAI', {prompt: prompt}); },
+            preprocessMessage: function(message) { return callWithCallback('preprocessMessage', {message: message}); },
+            classifyIntent: function(message) { return callWithCallback('classifyIntent', {message: message}); },
+            nativeStatus: function() { return callWithCallback('nativeStatus', {}); },
+            requestPermissions: function() { return callWithCallback('requestPermissions', {}); }
         };
+        window.dispatchEvent(new Event('hermes:nativeReady'));
+        return api;
     })();
     """ }
 
@@ -102,18 +155,74 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
 
     private func handleOnDeviceAI(prompt: String, callbackId: String) async {
         let result = await FoundationModelsAdapter.shared.respond(to: prompt)
-        guard let data = try? JSONSerialization.data(withJSONObject: result, options: .fragmentsAllowed),
-              let jsonString = String(data: data, encoding: .utf8) else { return }
-        await MainActor.run {
-            coordinator?.webView?.evaluateJavaScript(
-                "window._hermesCallback('\(callbackId)', \(jsonString))",
+        resolveCallback(callbackId: callbackId, result: result)
+    }
+
+    private func handlePreprocess(message: String, callbackId: String) async {
+        let result = await FoundationModelsAdapter.shared.preprocess(userMessage: message)
+        resolveCallback(callbackId: callbackId, result: result)
+    }
+
+    private func handleClassifyIntent(message: String, callbackId: String) {
+        let skill = OnDeviceClassifier.shared.classify(message: message)
+        resolveCallback(callbackId: callbackId, result: [
+            "skill": skill as Any? ?? NSNull(),
+            "source": skill == nil ? "none" : "on_device"
+        ])
+    }
+
+    @MainActor
+    private func handleNativeStatus(callbackId: String) {
+        let status: [String: Any] = [
+            "foundationModels": FoundationModelsAdapter.shared.availabilityDescription,
+            "permissions": [
+                "microphone": PermissionsManager.shared.microphone.bridgeValue,
+                "speechRecognition": PermissionsManager.shared.speechRecognition.bridgeValue,
+                "notifications": PermissionsManager.shared.notifications.bridgeValue,
+                "photoLibrary": PermissionsManager.shared.photoLibrary.bridgeValue
+            ]
+        ]
+        resolveCallback(callbackId: callbackId, result: status)
+    }
+
+    @MainActor
+    private func handlePermissionRequest(callbackId: String) async {
+        await PermissionsManager.shared.requestAll()
+        handleNativeStatus(callbackId: callbackId)
+    }
+
+    private func resolveCallback(callbackId: String, result: Any) {
+        guard !callbackId.isEmpty,
+              let callbackLiteral = Self.jsonLiteral(callbackId),
+              let resultLiteral = Self.jsonLiteral(result) else { return }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.coordinator?.webView?.evaluateJavaScript(
+                "window._hermesCallback(\(callbackLiteral), \(resultLiteral))",
                 completionHandler: nil
             )
         }
     }
+
+    private static func jsonLiteral(_ value: Any) -> String? {
+        guard JSONSerialization.isValidJSONObject(value)
+                || value is String
+                || value is NSNumber
+                || value is NSNull else {
+            return nil
+        }
+
+        guard let data = try? JSONSerialization.data(withJSONObject: value, options: .fragmentsAllowed) else {
+            return nil
+        }
+
+        return String(data: data, encoding: .utf8)
+    }
 }
 
-private enum AssociatedKeys { static var delegate = "filePickerDelegate" }
+private enum AssociatedKeys {
+    nonisolated(unsafe) static var delegate: UInt8 = 0
+}
 
 // Separate class to hold UIDocumentPickerDelegate reference alive
 private final class FilePickerDelegate: NSObject, UIDocumentPickerDelegate {
@@ -139,5 +248,18 @@ private final class FilePickerDelegate: NSObject, UIDocumentPickerDelegate {
             "window._hermesCallback('\(callbackId)', \(jsonString))",
             completionHandler: nil
         )
+    }
+}
+
+private extension PermissionsManager.Status {
+    var bridgeValue: String {
+        switch self {
+        case .notDetermined:
+            return "not_determined"
+        case .granted:
+            return "granted"
+        case .denied:
+            return "denied"
+        }
     }
 }

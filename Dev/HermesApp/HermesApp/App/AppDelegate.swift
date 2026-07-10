@@ -12,7 +12,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         UNUserNotificationCenter.current().delegate = self
         NotificationCategories.registerAll()
 
-        BGTaskScheduler.shared.register(
+        let didRegisterBackgroundRefresh = BGTaskScheduler.shared.register(
             forTaskWithIdentifier: BackgroundRefresh.taskIdentifier,
             using: nil
         ) { task in
@@ -21,6 +21,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 return
             }
             BackgroundRefresh.shared.handleRefresh(task: refreshTask)
+        }
+        if !didRegisterBackgroundRefresh {
+            print("[HermesApp] Failed to register background refresh task.")
         }
 
         SpotlightIndexer.reindexAll()
@@ -31,6 +34,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func applicationDidEnterBackground(_ application: UIApplication) {
         BackgroundRefresh.shared.schedule()
         SpotlightIndexer.reindexAll()
+    }
+
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        Task { @MainActor in
+            SpotlightIndexer.handle(userActivity: userActivity, webView: HermesWebViewCoordinator.activeWebView)
+        }
+        return true
     }
 
     // Show notifications even when app is in foreground

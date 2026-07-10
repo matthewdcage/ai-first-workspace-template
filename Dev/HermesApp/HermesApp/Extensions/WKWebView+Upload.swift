@@ -1,5 +1,6 @@
 import WebKit
 import UIKit
+import UniformTypeIdentifiers
 
 /// Intercepts WKWebView file input taps and replaces with native UIDocumentPickerViewController.
 /// This ensures the full native file picker (iCloud, Files, Photos) is available
@@ -7,6 +8,7 @@ import UIKit
 extension WKWebView {
 
     /// Call in `webView(_:runOpenPanelWith:initiatedByFrame:completionHandler:)` (WKUIDelegate).
+    @available(iOS 18.4, *)
     static func handleFileUpload(
         parameters: WKOpenPanelParameters,
         from viewController: UIViewController,
@@ -41,7 +43,6 @@ private final class DocumentPickerAdapter: NSObject, UIDocumentPickerDelegate {
     }
 }
 
-private enum AssociatedKey { static var adapter = "documentPickerAdapter" }
-
-import UniformTypeIdentifiers
-private typealias UTType = UniformTypeIdentifiers.UTType
+private enum AssociatedKey {
+    nonisolated(unsafe) static var adapter: UInt8 = 0
+}

@@ -22,8 +22,8 @@ final class BackgroundRefresh {
             let hasNew = await checkForNewActivity()
             if hasNew {
                 NotificationManager.shared.schedule(
-                    title: "Hermes Update",
-                    body: "Your agent has new activity.",
+                    title: String(localized: "notification.agent_update.title"),
+                    body: String(localized: "notification.agent_update.body"),
                     delay: 0
                 )
             }
@@ -39,15 +39,11 @@ final class BackgroundRefresh {
     }
 
     private func checkForNewActivity() async -> Bool {
-        guard let base = ServerConfig.shared.baseURL else { return false }
-        let url = base.appendingPathComponent("/api/hermes/status")
-        var request = URLRequest(url: url, timeoutInterval: 20)
-        let token = ServerConfig.shared.hermesAuthToken
-        if !token.isEmpty { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
-        if !ServerConfig.shared.cfClientId.isEmpty {
-            request.setValue(ServerConfig.shared.cfClientId, forHTTPHeaderField: "CF-Access-Client-Id")
-            request.setValue(ServerConfig.shared.cfClientSecret, forHTTPHeaderField: "CF-Access-Client-Secret")
-        }
+        guard let request = await ServerConfig.shared.authenticatedRequest(
+            path: "api/hermes/status",
+            timeoutInterval: 20
+        ) else { return false }
+
         guard let (data, _) = try? await URLSession.shared.data(for: request),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let hasNew = json["has_new_activity"] as? Bool else { return false }

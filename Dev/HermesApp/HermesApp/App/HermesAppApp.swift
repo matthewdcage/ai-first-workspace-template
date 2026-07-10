@@ -1,3 +1,4 @@
+import CoreSpotlight
 import SwiftUI
 import BackgroundTasks
 import UserNotifications
@@ -18,7 +19,7 @@ struct HermesAppApp: App {
                     handle(activity)
                 }
                 .task {
-                    await PermissionsManager.shared.refreshAll()
+                    PermissionsManager.shared.refreshAll()
                 }
         }
     }
@@ -31,5 +32,3 @@ struct HermesAppApp: App {
         HermesWebViewCoordinator.activeWebView?.load(URLRequest(url: url))
     }
 }
-
-import CoreSpotlight

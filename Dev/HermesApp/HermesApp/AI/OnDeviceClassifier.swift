@@ -14,7 +14,15 @@ final class OnDeviceClassifier {
         "memory", "calendar", "email", "chat", "summarize", "translate"
     ]
 
-    private init() {}
+    private let model: NLModel?
+
+    private init() {
+        if let modelURL = Bundle.main.url(forResource: "HermesIntentClassifier", withExtension: "mlmodelc") {
+            model = try? NLModel(contentsOf: modelURL)
+        } else {
+            model = nil
+        }
+    }
 
     /// Returns the most likely Hermes skill name for a given user message,
     /// using keyword heuristics when no CoreML model is available.
@@ -26,10 +34,7 @@ final class OnDeviceClassifier {
     }
 
     private func classifyWithCoreML(message: String) -> String? {
-        // Load HermesIntentClassifier.mlmodel from bundle if present
-        guard let modelURL = Bundle.main.url(forResource: "HermesIntentClassifier", withExtension: "mlmodelc"),
-              let model = try? NLModel(contentsOf: modelURL) else { return nil }
-        return model.predictedLabel(for: message)
+        model?.predictedLabel(for: message)
     }
 
     private func heuristicClassify(message: String) -> String? {

@@ -10,6 +10,7 @@ options:
   xcodeVersion: "16.0"
   generateEmptyDirectories: true
   defaultConfig: Debug
+  defaultLocalizer: en
 
 settings:
   base:
@@ -31,6 +32,8 @@ targets:
       - path: HermesApp
         excludes:
           - "**/*.md"
+          - "NativeCapabilities/HermesAppTests.swift"
+    localizationFile: HermesApp/en.lproj/Localizable.strings
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: au.aiadvantage.HermesApp
@@ -41,7 +44,6 @@ targets:
     entitlements:
       path: HermesApp/HermesApp.entitlements
       properties:
-        com.apple.security.application-groups: []
         com.apple.developer.siri: true
         com.apple.developer.usernotifications.time-sensitive: true
     info:
@@ -52,13 +54,15 @@ targets:
         NSMicrophoneUsageDescription: "Hermes uses the microphone for voice input to your agent."
         NSSpeechRecognitionUsageDescription: "Hermes transcribes your voice to send messages to your agent."
         NSPhotoLibraryUsageDescription: "Hermes lets you share photos and files with your agent."
+        NSLocalNetworkUsageDescription: "Hermes connects to your self-hosted Hermes server on your local network."
         BGTaskSchedulerPermittedIdentifiers:
           - com.hermesapp.refresh
         UIBackgroundModes:
           - fetch
           - remote-notification
         NSAppTransportSecurity:
-          NSAllowsArbitraryLoads: false
+          NSAllowsArbitraryLoadsInWebContent: true
+          NSAllowsLocalNetworking: true
     capabilities:
       - type: push-notifications
       - type: background-modes

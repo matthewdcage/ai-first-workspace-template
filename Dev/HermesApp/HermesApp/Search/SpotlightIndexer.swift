@@ -1,5 +1,6 @@
 import CoreSpotlight
 import Foundation
+import WebKit
 
 /// Indexes Hermes chat sessions and skills into classic iOS/macOS Spotlight
 /// (CSSearchableIndex) so they surface in system-wide search — independent
@@ -57,6 +58,7 @@ enum SpotlightIndexer {
 
     /// Resolves a Spotlight tap (NSUserActivity with CSSearchableItemActionType)
     /// back to a deep link the WebView can load.
+    @MainActor
     static func deepLink(for userActivity: NSUserActivity) -> URL? {
         guard userActivity.activityType == CSSearchableItemActionType,
               let uniqueId = userActivity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
@@ -64,15 +66,23 @@ enum SpotlightIndexer {
 
         if uniqueId.hasPrefix("chat-") {
             let sessionId = String(uniqueId.dropFirst("chat-".count))
-            return base.appendingPathComponent("/chat/\(sessionId)")
+            return base.appendingHermesPath("chat/\(sessionId)")
         } else if uniqueId.hasPrefix("skill-") {
             let skillId = String(uniqueId.dropFirst("skill-".count))
-            return base.appendingPathComponent("/skills/\(skillId)")
+            return base.appendingHermesPath("skills/\(skillId)")
         }
         return nil
     }
 
     static func clearAll() {
         CSSearchableIndex.default().deleteAllSearchableItems()
+    }
+
+    /// Convenience to immediately open or buffer a Spotlight deep link.
+    @MainActor
+    static func handle(userActivity: NSUserActivity, webView: WKWebView?) {
+        if let url = deepLink(for: userActivity) {
+            DeepLinkManager.shared.storeOrLoad(url: url, webView: webView)
+        }
     }
 }

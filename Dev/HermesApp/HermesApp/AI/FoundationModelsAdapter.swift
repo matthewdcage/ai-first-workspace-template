@@ -1,64 +1,110 @@
 import Foundation
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 
-/// Wraps Apple's on-device Foundation Models framework (iOS 18.1+).
-/// Falls back to a pass-through on unsupported devices.
-///
-/// Requires: Xcode 16.1+, iOS 18.1+ deployment target, and the
-/// com.apple.developer.foundation-models entitlement.
+/// Wraps Apple's Foundation Models framework when it is available in the SDK
+/// and on the current device. Older SDKs and unsupported devices fall back to
+/// returning the original prompt, so Hermes remains usable everywhere.
 @MainActor
 final class FoundationModelsAdapter {
     static let shared = FoundationModelsAdapter()
+
+    #if canImport(FoundationModels)
+    private var sessionStorage: Any?
+    #endif
+
     private init() {}
 
-    /// Runs a prompt through the on-device Apple Intelligence model.
-    /// Returns the raw response string, or the original prompt on failure.
-    func respond(to prompt: String) async -> String {
-        // FoundationModels is conditionally available — gate on runtime check
-        if #available(iOS 18.1, *) {
-            return await runFoundationModel(prompt: prompt)
+    var availabilityDescription: String {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            switch SystemLanguageModel.default.availability {
+            case .available:
+                return "available"
+            case .unavailable(.appleIntelligenceNotEnabled):
+                return "apple_intelligence_disabled"
+            case .unavailable(.deviceNotEligible):
+                return "device_not_eligible"
+            case .unavailable(.modelNotReady):
+                return "model_not_ready"
+            case .unavailable(_):
+                return "unavailable"
+            }
         }
-        return prompt
+        #endif
+        return "sdk_unavailable"
     }
 
-    /// Summarize a long Hermes response for notification previews.
+    /// Runs a prompt through the on-device Apple Foundation Model.
+    /// Returns the original prompt when the framework or device is unavailable.
+    func respond(to prompt: String) async -> String {
+        let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPrompt.isEmpty else { return "" }
+
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            return await respondWithFoundationModels(to: trimmedPrompt)
+        }
+        #endif
+
+        return trimmedPrompt
+    }
+
+    /// Summarizes a long Hermes response for notification previews.
     func summarizeForNotification(_ text: String) async -> String {
-        let instruction = "Summarize this AI agent response in one sentence for a push notification: \(text)"
-        return await respond(to: instruction)
+        guard text.count > 160 else { return text }
+        let prompt = """
+        Summarize this Hermes agent response in one concise notification sentence.
+        Preserve important numbers, dates, file names, and decisions exactly.
+
+        Response:
+        \(text)
+        """
+        return await respond(to: prompt)
     }
 
-    /// Pre-process a user message — clean up, detect intent, improve clarity.
+    /// Pre-processes a user message to improve clarity before it is sent to Hermes.
     func preprocess(userMessage: String) async -> String {
         guard userMessage.count > 80 else { return userMessage }
-        let instruction = "Rephrase this message to be clear and concise for an AI agent: \(userMessage)"
-        return await respond(to: instruction)
+        let prompt = """
+        Rewrite this user message for an AI agent. Keep the user's intent, constraints,
+        names, numbers, and code identifiers unchanged. Return only the rewritten message.
+
+        Message:
+        \(userMessage)
+        """
+        return await respond(to: prompt)
     }
 
-    @available(iOS 18.1, *)
-    private func runFoundationModel(prompt: String) async -> String {
-        // Dynamic import guard: FoundationModels may not be available even on iOS 18.1
-        // on devices without Apple Intelligence (A17 Pro / M-series required).
-        // We use NSClassFromString to avoid a hard link on older devices.
-        guard let sessionClass = NSClassFromString("FMLanguageModelSession") as? NSObject.Type else {
-            return prompt // device doesn't support Apple Intelligence
-        }
-        let session = sessionClass.init()
-        let sel = NSSelectorFromString("respondToPrompt:completionHandler:")
-        guard session.responds(to: sel) else {
+    #if canImport(FoundationModels)
+    @available(iOS 26.0, *)
+    private func respondWithFoundationModels(to prompt: String) async -> String {
+        switch SystemLanguageModel.default.availability {
+        case .available:
+            break
+        default:
             return prompt
         }
-        return await withCheckedContinuation { continuation in
-            typealias Handler = @convention(block) (String?, Error?) -> Void
-            let block: Handler = { result, _ in
-                continuation.resume(returning: result ?? prompt)
-            }
-            // performSelector(with:with:) assumes an object-returning method and can
-            // crash (mis-reads/retains a bogus return value) on a void-returning
-            // selector. Resolve the IMP and invoke it through a typed C function
-            // pointer instead, which matches the real signature exactly.
-            typealias MethodType = @convention(c) (NSObject, Selector, String, @escaping Handler) -> Void
-            let imp = session.method(for: sel)
-            let function = unsafeBitCast(imp, to: MethodType.self)
-            function(session, sel, prompt, block)
+
+        do {
+            let activeSession = (sessionStorage as? LanguageModelSession) ?? makeSession()
+            sessionStorage = activeSession
+            let response = try await activeSession.respond(to: prompt)
+            return response.content
+        } catch {
+            sessionStorage = nil
+            return prompt
         }
     }
+
+    @available(iOS 26.0, *)
+    private func makeSession() -> LanguageModelSession {
+        LanguageModelSession(instructions: """
+        You are HermesApp's private on-device assistant layer. Keep responses concise,
+        preserve factual details exactly, and avoid adding unsupported details. Use the
+        user's wording and context as the source of truth.
+        """)
+    }
+    #endif
 }

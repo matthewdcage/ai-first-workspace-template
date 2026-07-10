@@ -1,4 +1,5 @@
 import UIKit
+import WebKit
 
 /// Handles incoming share sheet items — text or URLs shared into the Hermes app.
 /// The shared content is deep-linked into the WKWebView as a pre-filled chat message.

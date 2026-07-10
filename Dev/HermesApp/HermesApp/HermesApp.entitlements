@@ -2,13 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>com.apple.developer.siri</key>
-    <true/>
-    <key>com.apple.developer.usernotifications.time-sensitive</key>
-    <true/>
-    <!-- Uncomment when Apple Intelligence entitlement is approved:
-    <key>com.apple.developer.foundation-models</key>
-    <true/>
-    -->
+	<key>com.apple.developer.siri</key>
+	<true/>
+	<key>com.apple.developer.usernotifications.time-sensitive</key>
+	<true/>
 </dict>
 </plist>

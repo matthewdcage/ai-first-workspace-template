@@ -4,36 +4,37 @@ import Foundation
 // MARK: - Ask Hermes (Siri / Shortcuts)
 
 struct AskHermesIntent: AppIntent {
-    static var title: LocalizedStringResource = "Ask Hermes"
-    static var description = IntentDescription("Send a message to your self-hosted Hermes agent.")
+    static let title: LocalizedStringResource = "Ask Hermes"
+    static let description = IntentDescription("Send a message to your self-hosted Hermes agent.")
 
     @Parameter(title: "Message", description: "What you want to ask Hermes")
     var message: String
 
     func perform() async throws -> some ProvidesDialog {
         let response = try await HermesAPIClient.shared.chat(message: message)
-        return .result(dialog: IntentDialog(response))
+        return .result(dialog: IntentDialog(stringLiteral: response))
     }
 }
 
 // MARK: - Open Chat Session (Siri / Spotlight / Shortcuts)
 
-/// Resolves against ChatSessionEntity (Search/HermesEntities.swift), so Siri
-/// and Spotlight can offer "open that chat about X" using the same entity
-/// data that feeds the semantic index.
 struct OpenChatSessionIntent: AppIntent {
-    static var title: LocalizedStringResource = "Open Hermes Chat"
-    static var description = IntentDescription("Open a specific Hermes chat session.")
-    static var openAppWhenRun: Bool = true
+    static let title: LocalizedStringResource = "Open Hermes Chat"
+    static let description = IntentDescription("Open a specific Hermes chat session.")
+    static let openAppWhenRun: Bool = true
 
     @Parameter(title: "Chat")
     var session: ChatSessionEntity
 
     func perform() async throws -> some IntentResult {
-        HandoffManager.makeChatActivity(sessionId: session.id, title: session.title).becomeCurrent()
-        if let base = ServerConfig.shared.baseURL {
-            let url = base.appendingPathComponent("/chat/\(session.id)")
-            await MainActor.run { HermesWebViewCoordinator.activeWebView?.load(URLRequest(url: url)) }
+        await MainActor.run {
+            HandoffManager.makeChatActivity(sessionId: session.id, title: session.title).becomeCurrent()
+        }
+        if let base = await ServerConfig.shared.baseURL {
+            let url = base.appendingHermesPath("chat/\(session.id)")
+            await MainActor.run {
+                _ = HermesWebViewCoordinator.activeWebView?.load(URLRequest(url: url))
+            }
         }
         return .result()
     }
@@ -44,9 +45,9 @@ struct HermesShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: AskHermesIntent(),
             phrases: [
-                "Ask Hermes \(\.$message)",
-                "Tell Hermes \(\.$message)",
-                "Send to Hermes \(\.$message)"
+                "Ask \(.applicationName)",
+                "Talk to \(.applicationName)",
+                "Send a message to \(.applicationName)"
             ],
             shortTitle: "Ask Hermes",
             systemImageName: "bubble.left.and.bubble.right"
@@ -54,8 +55,8 @@ struct HermesShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: OpenChatSessionIntent(),
             phrases: [
-                "Open \(\.$session) in Hermes",
-                "Continue \(\.$session) in Hermes"
+                "Open \(\.$session) in \(.applicationName)",
+                "Continue \(\.$session) in \(.applicationName)"
             ],
             shortTitle: "Open Hermes Chat",
             systemImageName: "clock.arrow.circlepath"
@@ -65,34 +66,36 @@ struct HermesShortcutsProvider: AppShortcutsProvider {
 
 // MARK: - Hermes API client (used by App Intents — bypasses WKWebView)
 
-final class HermesAPIClient {
+final class HermesAPIClient: @unchecked Sendable {
     static let shared = HermesAPIClient()
     private init() {}
 
     func chat(message: String) async throws -> String {
-        guard let base = ServerConfig.shared.baseURL else {
+        guard var request = await ServerConfig.shared.authenticatedRequest(
+            path: "api/hermes/chat",
+            timeoutInterval: 30
+        ) else {
             throw URLError(.badURL)
         }
-        let url = base.appendingPathComponent("/api/hermes/chat")
-        var request = URLRequest(url: url, timeoutInterval: 30)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let token = ServerConfig.shared.hermesAuthToken
-        if !token.isEmpty { request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") }
-        if !ServerConfig.shared.cfClientId.isEmpty {
-            request.setValue(ServerConfig.shared.cfClientId, forHTTPHeaderField: "CF-Access-Client-Id")
-            request.setValue(ServerConfig.shared.cfClientSecret, forHTTPHeaderField: "CF-Access-Client-Secret")
-        }
 
         let payload = ["message": message]
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let reply = json["response"] as? String else {
-            return "Hermes responded but the format was unexpected."
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode) else {
+            throw URLError(.badServerResponse)
         }
-        return reply
+
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return String(localized: "api.unexpected_response")
+        }
+
+        return (json["response"] as? String)
+            ?? (json["reply"] as? String)
+            ?? (json["message"] as? String)
+            ?? String(localized: "api.unexpected_response")
     }
 }

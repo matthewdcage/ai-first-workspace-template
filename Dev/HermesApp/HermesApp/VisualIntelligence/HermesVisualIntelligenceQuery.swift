@@ -3,6 +3,7 @@ import AppIntents
 import Vision
 #if canImport(VisualIntelligence)
 import VisualIntelligence
+import VideoToolbox
 #endif
 
 /// Integrates Hermes with Apple's Visual Intelligence (WWDC26, shipping
@@ -84,7 +85,7 @@ struct HermesSemanticContentSearchIntent: AppIntent {
         // Land on the strongest match; Visual Intelligence's result list in
         // its own UI already lets the user pick among all `matches` before
         // this intent runs, per Apple's sample (OpenIntent pattern).
-        let url = base.appendingPathComponent("/chat/\(first.id)")
+        let url = base.appendingHermesPath("chat/\(first.id)")
         await MainActor.run { HermesWebViewCoordinator.activeWebView?.load(URLRequest(url: url)) }
         return .result()
     }
