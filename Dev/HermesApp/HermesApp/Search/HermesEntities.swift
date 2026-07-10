@@ -2,15 +2,25 @@ import AppIntents
 import Foundation
 
 /// AppEntity definitions that make Hermes content discoverable to Siri,
-/// Spotlight's semantic index, and Shortcuts — the current (stable) App
-/// Intents mechanism for "Siri understands what's in your app."
+/// Spotlight's semantic index, and Shortcuts.
 ///
-/// Forward-compat note: when Apple ships the unreleased Assistant Schema
-/// domains (`@AssistantIntent(schema: .system.search)` etc.), these entities
-/// are the ones to re-annotate — the schema system layers structured
-/// vocabulary on top of the same AppEntity/AppIntent model, it doesn't
-/// replace it. No symbols from the unreleased schema APIs are referenced
-/// here so this compiles on current SDKs.
+/// Assistant Schema note (WWDC26, iOS/macOS 27): Apple's `@AppEntity(schema:)`
+/// / `@AssistantIntent(schema:)` macros bind an entity or intent to a
+/// system-defined domain — messages, mail, photos, documents — so Siri
+/// gets structured vocabulary "for free." None of the announced domains is
+/// a semantic match for "AI agent chat session" or "agent skill": the
+/// `.messages` domain in particular implies sender/recipient semantics a
+/// Hermes session doesn't have, and force-fitting it would make Siri infer
+/// things about the entity that aren't true. So these stay plain
+/// `AppEntity`/`IndexedEntity` conformances (a fully supported, permanent
+/// path for anything outside the predefined domains) rather than adopting
+/// a domain schema. `AskHermesIntent` / `OpenChatSessionIntent` in
+/// AppIntents.swift are custom AppIntents for the same reason.
+///
+/// This is the correct call per Apple's own guidance — schemas cover
+/// *common* categories; the framework is explicitly designed so intents
+/// and entities outside those categories keep working as custom
+/// AppIntents/AppEntity, with no loss of Siri/Spotlight/Shortcuts support.
 
 // MARK: - Chat Session Entity
 

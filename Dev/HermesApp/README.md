@@ -12,10 +12,17 @@ A native iOS app that wraps your self-hosted **Hermes Studio** web UI in WKWebVi
 
 | Requirement | Version |
 |---|---|
-| Xcode | 16.0+ |
+| Xcode | 16.0+ (Xcode 27 recommended — needed to build the Visual Intelligence integration) |
 | Swift | 5.10+ |
-| iOS Deployment Target | 18.0 |
-| Apple Intelligence (optional) | iOS 18.1+, iPhone 15 Pro / iPhone 16 family |
+| iOS Deployment Target | 18.0 (kept broad on purpose — see below) |
+| Apple Intelligence / Foundation Models (optional) | iOS 18.1+, iPhone 15 Pro / iPhone 16 family |
+| Visual Intelligence integration (optional) | iOS/macOS 27+ (WWDC26), gated behind `#if canImport(VisualIntelligence)` |
+
+The deployment target stays at 18.0 deliberately: the newer integrations
+(Foundation Models, Visual Intelligence) are written to compile and no-op
+on older SDKs/OS versions rather than forcing every user onto iOS 27 to
+install the app at all. See `ROADMAP.md` for what's gated behind which
+availability check.
 
 ## Hermes Studio — Latest Commit
 

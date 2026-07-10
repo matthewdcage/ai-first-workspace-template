@@ -18,31 +18,58 @@ vs. what's planned once Apple ships the next tier of platform APIs.
 | Voice I/O | `AVSpeechSynthesizer` + `SFSpeechRecognizer`, correct `AVAudioSession` config | `AI/SpeechBridge.swift` |
 | Background sync | `BGAppRefreshTask` polling Hermes for new activity | `NativeCapabilities/BackgroundRefresh.swift` |
 
-## Planned — next milestones
+## Update — WWDC26 shipped (iOS/macOS 27 beta, June 2026)
 
-### 1. Assistant Schemas (Apple Intelligence, unreleased at time of writing)
-Apple's App Intents framework is moving toward predefined **Assistant Schema
-domains** (`@AssistantIntent(schema: .system.search)`-style annotations) that
-give Siri structured vocabulary for common categories (messaging, browsing,
-files) instead of only free-form natural-language phrase matching.
+Assistant Schemas and Visual Intelligence's app-integration API are no
+longer unreleased — they shipped in the iOS/macOS 27 beta SDK. Revised
+status below supersedes the "planned, blocked on Apple" framing that was
+accurate when this doc was first written (pre-WWDC26).
 
-No schema symbols are referenced anywhere in this codebase yet — they're
-unreleased and referencing them would break the build. When Apple ships
-them:
-- Re-annotate `AskHermesIntent` under the messaging-like schema so "text
-  Hermes" style phrasing resolves without a custom phrase list
-- Re-annotate `OpenChatSessionIntent` under a search/browsing schema
-- `ChatSessionEntity` / `HermesSkillEntity` (`Search/HermesEntities.swift`)
-  are already `AppEntity` + `IndexedEntity` — schema adoption is additive on
-  top of these, not a rewrite
+### 1. Assistant Schemas — evaluated, deliberately not adopted for Hermes's entities
 
-### 2. Visual Intelligence
-Lets a user point the Camera app (or select on-screen content on Mac/iPad)
-and jump into an app for matching results. Integration point is an
-`AppIntent` that accepts an image and returns matching Hermes
-sessions/skills — same `AppEntity` types already defined can be the return
-value. Blocked on Apple publishing the integration API; the entity layer is
-already in place to receive it.
+`@AppEntity(schema:)` / `@AssistantIntent(schema:)` bind an entity/intent to
+a system-defined domain (`.messages`, `.mail`, `.photos`, `.documents`, and
+others) so Siri gets structured vocabulary for free, confirmed via the
+WWDC26 "Build intelligent Siri experiences with App Schemas" session.
+
+None of the announced domains is a semantic match for "AI agent chat
+session" or "agent skill" — `.messages` in particular implies sender/
+recipient semantics a Hermes session doesn't have. Force-fitting it would
+make Siri infer relationships about the entity that aren't true, which is
+worse than not adopting a schema at all. `ChatSessionEntity` /
+`HermesSkillEntity` (`Search/HermesEntities.swift`) stay plain
+`AppEntity`/`IndexedEntity` — a fully supported, permanent path Apple's own
+guidance describes for content outside the predefined categories, not a
+fallback. See the doc comment in that file for the full reasoning.
+
+If Apple later ships an assistant-adjacent domain that actually fits (e.g.
+a general "AI conversation" or "task" domain), revisit — the entity layer
+underneath doesn't need to change, only the attribute macros on top of it.
+
+### 2. Visual Intelligence — implemented, gated behind `canImport`
+
+Shipped: an app-facing `IntentValueQuery` that receives a
+`SemanticContentDescriptor` (camera frame / on-screen selection) and
+returns matching `AppEntity` results, plus a `semanticContentSearch`
+Assistant Schema that auto-supplies that descriptor to an intent.
+
+Implemented in `VisualIntelligence/HermesVisualIntelligenceQuery.swift`,
+entirely inside `#if canImport(VisualIntelligence)` so it's inert on any
+SDK where the framework doesn't exist. Two things there are corroborated
+from WWDC26 coverage but **not yet confirmed against Apple's primary doc
+page** (it returned empty on fetch — likely JS-rendered content) and need
+a quick check in Xcode 27 before this ships to TestFlight:
+- `SemanticContentDescriptor.pixelBuffer` — property name plausible, not
+  independently confirmed
+- The exact schema path for `semanticContentSearch` (`.system....` vs.
+  `.visualIntelligence....` vs. something else) — the intent currently
+  takes `semanticContent` as a manual `@Parameter` rather than guessing
+  the schema macro path and getting it wrong
+
+The matching logic itself (`HermesSemanticContentQuery.values(for:)`) is a
+placeholder returning all cached sessions — replace with real OCR/vision
+similarity ranking once the descriptor's actual pixel data access is
+confirmed.
 
 ### 3. macOS native target
 `WebView`/`HermesWebViewCoordinator` currently use `UIViewRepresentable` and
