@@ -7,8 +7,6 @@ import NaturalLanguage
 final class OnDeviceClassifier {
     static let shared = OnDeviceClassifier()
 
-    private let tagger = NLTagger(tagSchemes: [.nameType, .tokenType])
-
     /// Known Hermes skill names used as classification labels.
     /// Replace with your actual Hermes skill list or load dynamically from the API.
     static let knownSkills = [

@@ -23,12 +23,12 @@ enum ShareExtensionHandler {
     }
 
     private static func injectMessage(_ text: String, into webView: WKWebView?) {
-        guard let webView else { return }
-        let escaped = text.replacingOccurrences(of: "\\", with: "\\\\")
-                          .replacingOccurrences(of: "'", with: "\\'")
+        guard let webView,
+              let data = try? JSONSerialization.data(withJSONObject: text, options: .fragmentsAllowed),
+              let jsonString = String(data: data, encoding: .utf8) else { return }
         DispatchQueue.main.async {
             webView.evaluateJavaScript(
-                "window.hermesNative && window.dispatchEvent(new CustomEvent('hermes:shareInput', {detail: '\(escaped)'}))",
+                "window.hermesNative && window.dispatchEvent(new CustomEvent('hermes:shareInput', {detail: \(jsonString)}))",
                 completionHandler: nil
             )
         }

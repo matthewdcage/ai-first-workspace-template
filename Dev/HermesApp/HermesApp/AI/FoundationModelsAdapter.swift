@@ -41,19 +41,24 @@ final class FoundationModelsAdapter {
         guard let sessionClass = NSClassFromString("FMLanguageModelSession") as? NSObject.Type else {
             return prompt // device doesn't support Apple Intelligence
         }
-        // Reflection-based call to avoid compile-time framework dependency
-        // when building on machines without the FoundationModels SDK.
         let session = sessionClass.init()
-        guard session.responds(to: NSSelectorFromString("respondToPrompt:completionHandler:")) else {
+        let sel = NSSelectorFromString("respondToPrompt:completionHandler:")
+        guard session.responds(to: sel) else {
             return prompt
         }
         return await withCheckedContinuation { continuation in
-            let sel = NSSelectorFromString("respondToPrompt:completionHandler:")
             typealias Handler = @convention(block) (String?, Error?) -> Void
             let block: Handler = { result, _ in
                 continuation.resume(returning: result ?? prompt)
             }
-            _ = session.perform(sel, with: prompt, with: block)
+            // performSelector(with:with:) assumes an object-returning method and can
+            // crash (mis-reads/retains a bogus return value) on a void-returning
+            // selector. Resolve the IMP and invoke it through a typed C function
+            // pointer instead, which matches the real signature exactly.
+            typealias MethodType = @convention(c) (NSObject, Selector, String, @escaping Handler) -> Void
+            let imp = session.method(for: sel)
+            let function = unsafeBitCast(imp, to: MethodType.self)
+            function(session, sel, prompt, block)
         }
     }
 }

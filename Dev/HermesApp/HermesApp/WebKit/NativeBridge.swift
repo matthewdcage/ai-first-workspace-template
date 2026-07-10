@@ -82,33 +82,31 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
 
     private func handleShare(text: String) {
         DispatchQueue.main.async {
-            guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                  let root = scene.windows.first?.rootViewController else { return }
+            guard let topVC = HermesWebViewCoordinator.topViewController() else { return }
             let vc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
-            root.present(vc, animated: true)
+            topVC.present(vc, animated: true)
         }
     }
 
     private func handleFileRequest(callbackId: String) {
         DispatchQueue.main.async {
-            guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                  let root = scene.windows.first?.rootViewController else { return }
+            guard let topVC = HermesWebViewCoordinator.topViewController() else { return }
             let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
             picker.allowsMultipleSelection = false
             let handler = FilePickerDelegate(callbackId: callbackId, webView: self.coordinator?.webView)
             picker.delegate = handler
             objc_setAssociatedObject(picker, &AssociatedKeys.delegate, handler, .OBJC_ASSOCIATION_RETAIN)
-            root.present(picker, animated: true)
+            topVC.present(picker, animated: true)
         }
     }
 
     private func handleOnDeviceAI(prompt: String, callbackId: String) async {
         let result = await FoundationModelsAdapter.shared.respond(to: prompt)
+        guard let data = try? JSONSerialization.data(withJSONObject: result, options: .fragmentsAllowed),
+              let jsonString = String(data: data, encoding: .utf8) else { return }
         await MainActor.run {
-            let escaped = result.replacingOccurrences(of: "\\", with: "\\\\")
-                                .replacingOccurrences(of: "'", with: "\\'")
             coordinator?.webView?.evaluateJavaScript(
-                "window._hermesCallback('\(callbackId)', '\(escaped)')",
+                "window._hermesCallback('\(callbackId)', \(jsonString))",
                 completionHandler: nil
             )
         }
@@ -129,14 +127,16 @@ private final class FilePickerDelegate: NSObject, UIDocumentPickerDelegate {
 
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let url = urls.first else { return }
-        _ = url.startAccessingSecurityScopedResource()
-        defer { url.stopAccessingSecurityScopedResource() }
+        let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+        defer { if shouldStopAccessing { url.stopAccessingSecurityScopedResource() } }
         guard let data = try? Data(contentsOf: url) else { return }
-        let b64 = data.base64EncodedString()
-        let name = url.lastPathComponent
-        let escaped = b64.replacingOccurrences(of: "\\", with: "\\\\")
+
+        let payload: [String: String] = ["name": url.lastPathComponent, "data": data.base64EncodedString()]
+        guard let payloadData = try? JSONSerialization.data(withJSONObject: payload),
+              let jsonString = String(data: payloadData, encoding: .utf8) else { return }
+
         webView?.evaluateJavaScript(
-            "window._hermesCallback('\(callbackId)', {name: '\(name)', data: '\(escaped)'})",
+            "window._hermesCallback('\(callbackId)', \(jsonString))",
             completionHandler: nil
         )
     }

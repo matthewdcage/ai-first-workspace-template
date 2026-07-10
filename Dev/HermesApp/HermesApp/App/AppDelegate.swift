@@ -1,6 +1,7 @@
 import UIKit
 import BackgroundTasks
 import UserNotifications
+import WebKit
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
@@ -9,19 +10,27 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        NotificationCategories.registerAll()
 
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: BackgroundRefresh.taskIdentifier,
             using: nil
         ) { task in
-            BackgroundRefresh.shared.handleRefresh(task: task as! BGAppRefreshTask)
+            guard let refreshTask = task as? BGAppRefreshTask else {
+                task.setTaskCompleted(success: false)
+                return
+            }
+            BackgroundRefresh.shared.handleRefresh(task: refreshTask)
         }
+
+        SpotlightIndexer.reindexAll()
 
         return true
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         BackgroundRefresh.shared.schedule()
+        SpotlightIndexer.reindexAll()
     }
 
     // Show notifications even when app is in foreground
@@ -31,5 +40,20 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+    }
+
+    // Route reply/open actions on rich agent-update notifications
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let sessionId = response.notification.request.content.userInfo["sessionId"] as? String
+        NotificationCategories.handle(
+            response: response,
+            sessionId: sessionId,
+            webView: HermesWebViewCoordinator.activeWebView
+        )
+        completionHandler()
     }
 }

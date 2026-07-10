@@ -3,6 +3,7 @@ import Security
 import Combine
 
 /// Persists server URL and credentials in the iOS Keychain.
+@MainActor
 final class ServerConfig: ObservableObject {
     static let shared = ServerConfig()
 

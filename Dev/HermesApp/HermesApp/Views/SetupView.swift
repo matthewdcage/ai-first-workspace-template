@@ -60,11 +60,16 @@ struct SetupView: View {
     }
 
     private func connect() {
-        guard let url = URL(string: config.serverURL), url.scheme?.hasPrefix("http") == true else {
+        let trimmedURL = config.serverURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmedURL), url.scheme?.hasPrefix("http") == true else {
             validationError = "Enter a valid https:// URL."
             return
         }
         validationError = nil
+        config.serverURL = trimmedURL
+        config.hermesAuthToken = config.hermesAuthToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        config.cfClientId = config.cfClientId.trimmingCharacters(in: .whitespacesAndNewlines)
+        config.cfClientSecret = config.cfClientSecret.trimmingCharacters(in: .whitespacesAndNewlines)
         config.save()
     }
 }

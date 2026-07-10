@@ -18,9 +18,7 @@ final class BackgroundRefresh {
     func handleRefresh(task: BGAppRefreshTask) {
         schedule() // re-arm for next cycle
 
-        task.expirationHandler = { task.setTaskCompleted(success: false) }
-
-        Task {
+        let refreshTask = Task {
             let hasNew = await checkForNewActivity()
             if hasNew {
                 NotificationManager.shared.schedule(
@@ -30,6 +28,13 @@ final class BackgroundRefresh {
                 )
             }
             task.setTaskCompleted(success: true)
+        }
+
+        // Cancel outstanding work when the system revokes our time budget,
+        // otherwise the app can be penalized for overrunning background limits.
+        task.expirationHandler = {
+            refreshTask.cancel()
+            task.setTaskCompleted(success: false)
         }
     }
 

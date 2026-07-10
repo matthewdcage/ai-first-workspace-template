@@ -16,6 +16,29 @@ struct AskHermesIntent: AppIntent {
     }
 }
 
+// MARK: - Open Chat Session (Siri / Spotlight / Shortcuts)
+
+/// Resolves against ChatSessionEntity (Search/HermesEntities.swift), so Siri
+/// and Spotlight can offer "open that chat about X" using the same entity
+/// data that feeds the semantic index.
+struct OpenChatSessionIntent: AppIntent {
+    static var title: LocalizedStringResource = "Open Hermes Chat"
+    static var description = IntentDescription("Open a specific Hermes chat session.")
+    static var openAppWhenRun: Bool = true
+
+    @Parameter(title: "Chat")
+    var session: ChatSessionEntity
+
+    func perform() async throws -> some IntentResult {
+        HandoffManager.makeChatActivity(sessionId: session.id, title: session.title).becomeCurrent()
+        if let base = ServerConfig.shared.baseURL {
+            let url = base.appendingPathComponent("/chat/\(session.id)")
+            await MainActor.run { HermesWebViewCoordinator.activeWebView?.load(URLRequest(url: url)) }
+        }
+        return .result()
+    }
+}
+
 struct HermesShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
@@ -27,6 +50,15 @@ struct HermesShortcutsProvider: AppShortcutsProvider {
             ],
             shortTitle: "Ask Hermes",
             systemImageName: "bubble.left.and.bubble.right"
+        )
+        AppShortcut(
+            intent: OpenChatSessionIntent(),
+            phrases: [
+                "Open \(\.$session) in Hermes",
+                "Continue \(\.$session) in Hermes"
+            ],
+            shortTitle: "Open Hermes Chat",
+            systemImageName: "clock.arrow.circlepath"
         )
     }
 }

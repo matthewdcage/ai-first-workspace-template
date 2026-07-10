@@ -45,6 +45,17 @@ final class SpeechBridge: NSObject {
             requestSTTPermission(); return
         }
 
+        // Shared audio session must support simultaneous playback (TTS) and
+        // recording (STT), otherwise the engine can fail to start or capture.
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .duckOthers])
+            try session.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            print("[SpeechBridge] Failed to configure audio session: \(error)")
+            return
+        }
+
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let req = recognitionRequest else { return }
         req.shouldReportPartialResults = true
@@ -60,10 +71,11 @@ final class SpeechBridge: NSObject {
         recognitionTask = recognizer?.recognitionTask(with: req) { [weak self] result, error in
             guard let result else { return }
             let transcript = result.bestTranscription.formattedString
-            let escaped = transcript.replacingOccurrences(of: "'", with: "\\'")
+            guard let data = try? JSONSerialization.data(withJSONObject: transcript, options: .fragmentsAllowed),
+                  let jsonString = String(data: data, encoding: .utf8) else { return }
             DispatchQueue.main.async {
                 self?.webView?.evaluateJavaScript(
-                    "window._hermesCallback('\(callbackId)', '\(escaped)')",
+                    "window._hermesCallback('\(callbackId)', \(jsonString))",
                     completionHandler: nil
                 )
             }
