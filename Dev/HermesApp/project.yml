@@ -1,0 +1,68 @@
+# XcodeGen project definition
+# Install: brew install xcodegen
+# Generate: cd Dev/HermesApp && xcodegen generate
+
+name: HermesApp
+options:
+  bundleIdPrefix: au.aiadvantage
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+    ENABLE_HARDENED_RUNTIME: YES
+    SWIFT_STRICT_CONCURRENCY: complete
+
+configs:
+  Debug: debug
+  Release: release
+
+targets:
+  HermesApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: HermesApp
+        excludes:
+          - "**/*.md"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: au.aiadvantage.HermesApp
+        INFOPLIST_FILE: HermesApp/Info.plist
+        DEVELOPMENT_ASSET_PATHS: '"HermesApp/Preview Content"'
+        ENABLE_PREVIEWS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    entitlements:
+      path: HermesApp/HermesApp.entitlements
+      properties:
+        com.apple.security.application-groups: []
+        com.apple.developer.siri: true
+        com.apple.developer.usernotifications.time-sensitive: true
+    info:
+      path: HermesApp/Info.plist
+      properties:
+        UILaunchScreen:
+          UIColorName: ""
+        NSMicrophoneUsageDescription: "Hermes uses the microphone for voice input to your agent."
+        NSSpeechRecognitionUsageDescription: "Hermes transcribes your voice to send messages to your agent."
+        NSPhotoLibraryUsageDescription: "Hermes lets you share photos and files with your agent."
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.hermesapp.refresh
+        UIBackgroundModes:
+          - fetch
+          - remote-notification
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+    capabilities:
+      - type: push-notifications
+      - type: background-modes
+        options:
+          modes: [fetch, remote-notification]
+      - type: siri
+      - type: keychain-sharing

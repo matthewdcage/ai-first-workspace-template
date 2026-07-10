@@ -1,0 +1,44 @@
+// !$*UTF8*$!
+// Xcode project file for HermesApp
+// Open with: open Dev/HermesApp/HermesApp.xcodeproj
+//
+// Manual setup required after opening:
+//
+//  1. SIGNING
+//     Xcode → HermesApp target → Signing & Capabilities
+//     Set your Team and Bundle Identifier (e.g. au.aiadvantage.HermesApp)
+//
+//  2. CAPABILITIES (Signing & Capabilities tab → + Capability)
+//     - Background Modes  → check "Background fetch"
+//     - Push Notifications
+//     - Siri
+//     - Keychain Sharing   (optional, for multi-device sync)
+//
+//  3. INFO.PLIST KEYS (add to Info tab or Info.plist)
+//     NSMicrophoneUsageDescription   → "Hermes uses the microphone for voice input."
+//     NSSpeechRecognitionUsageDescription → "Hermes transcribes your voice to text."
+//     NSPhotoLibraryUsageDescription → "Hermes lets you share photos with your agent."
+//     BGTaskSchedulerPermittedIdentifiers → [com.hermesapp.refresh]
+//
+//  4. DEPLOYMENT TARGET
+//     Set iOS Deployment Target to 18.0
+//
+//  5. FOUNDATION MODELS (iPhone 15 Pro+ only)
+//     Add entitlement: com.apple.developer.foundation-models
+//     Request via Apple Developer portal if not already approved.
+//
+//  6. BUILD
+//     Product → Run  (⌘R)
+//
+// This file is a placeholder — generate the real .pbxproj by running:
+//   xcodegen generate   (if you add a project.yml)
+// or create the project manually in Xcode by:
+//   File → New → Project → iOS → App → SwiftUI
+//   Then drag all Swift files from HermesApp/ into the project navigator.
+//
+{
+  archiveVersion = 1;
+  classes = {};
+  objectVersion = 77;
+  rootObject = HermesAppProject;
+}
