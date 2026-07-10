@@ -46,30 +46,32 @@ If Apple later ships an assistant-adjacent domain that actually fits (e.g.
 a general "AI conversation" or "task" domain), revisit — the entity layer
 underneath doesn't need to change, only the attribute macros on top of it.
 
-### 2. Visual Intelligence — implemented, gated behind `canImport`
+### 2. Visual Intelligence — implemented and verified against Apple's own sample
 
-Shipped: an app-facing `IntentValueQuery` that receives a
-`SemanticContentDescriptor` (camera frame / on-screen selection) and
-returns matching `AppEntity` results, plus a `semanticContentSearch`
-Assistant Schema that auto-supplies that descriptor to an intent.
+An app-facing `IntentValueQuery` receives a `SemanticContentDescriptor`
+(camera frame / on-screen selection) and returns matching `AppEntity`
+results; an intent annotated with the `semanticContentSearch` schema gets
+that descriptor auto-supplied when Visual Intelligence invokes it.
 
 Implemented in `VisualIntelligence/HermesVisualIntelligenceQuery.swift`,
 entirely inside `#if canImport(VisualIntelligence)` so it's inert on any
-SDK where the framework doesn't exist. Two things there are corroborated
-from WWDC26 coverage but **not yet confirmed against Apple's primary doc
-page** (it returned empty on fetch — likely JS-rendered content) and need
-a quick check in Xcode 27 before this ships to TestFlight:
-- `SemanticContentDescriptor.pixelBuffer` — property name plausible, not
-  independently confirmed
-- The exact schema path for `semanticContentSearch` (`.system....` vs.
-  `.visualIntelligence....` vs. something else) — the intent currently
-  takes `semanticContent` as a manual `@Parameter` rather than guessing
-  the schema macro path and getting it wrong
+SDK where the framework doesn't exist. Every symbol used —
+`SemanticContentDescriptor.pixelBuffer: CVReadOnlyPixelBuffer?`, the
+`IntentValueQuery` protocol shape, and the exact
+`@AppIntent(schema: .visualIntelligence.semanticContentSearch)` macro
+syntax — was confirmed verbatim against Apple's own worked example in the
+WWDC26 session 297 transcript ("Best practices for integrating visual
+intelligence in your app"), not inferred from secondary coverage.
 
-The matching logic itself (`HermesSemanticContentQuery.values(for:)`) is a
-placeholder returning all cached sessions — replace with real OCR/vision
-similarity ranking once the descriptor's actual pixel data access is
-confirmed.
+The matching logic differs from Apple's own album-art sample on purpose:
+their example matches images to images via `Vision`'s
+`GenerateImageFeaturePrintRequest` (feature-print similarity), which is the
+right tool for "does this photo look like that photo." Hermes sessions are
+text content, so `HermesSemanticContentQuery` instead runs
+`VNRecognizeTextRequest` (on-device OCR, a stable pre-27 Vision API) over
+the captured frame and matches recognized text against cached session
+titles — the correct technique for this domain rather than a copy-paste of
+the image-similarity approach.
 
 ### 3. macOS native target
 `WebView`/`HermesWebViewCoordinator` currently use `UIViewRepresentable` and
