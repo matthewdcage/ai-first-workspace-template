@@ -1,0 +1,8 @@
+# Xcode user state
+*.xcuserstate
+xcuserdata/
+
+# Swift / Xcode build outputs
+.build/
+DerivedData/
+

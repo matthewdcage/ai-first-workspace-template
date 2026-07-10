@@ -1,0 +1,28 @@
+/* Setup Screen */
+"Hermes Server" = "Hermes Server";
+"https://hermes.yourdomain.com" = "https://hermes.yourdomain.com";
+"Auth Token (from Hermes Settings)" = "Auth Token (from Hermes Settings)";
+"Hermes Authentication" = "Hermes Authentication";
+"Found in Hermes Studio → Settings → Account → API Token" = "Found in Hermes Studio → Settings → Account → API Token";
+"Cloudflare Access (optional)" = "Cloudflare Access (optional)";
+"CF-Access-Client-Id" = "CF-Access-Client-Id";
+"CF-Access-Client-Secret" = "CF-Access-Client-Secret";
+"Cloudflare Access" = "Cloudflare Access";
+"Enable if your tunnel is protected by Cloudflare Access policies." = "Enable if your tunnel is protected by Cloudflare Access policies.";
+"Connect to Hermes" = "Connect to Hermes";
+"Hermes Setup" = "Hermes Setup";
+
+/* Validation */
+"setup.error.invalid_url" = "Enter a valid https:// URL.";
+
+/* Notifications */
+"notification.agent_update.title" = "Hermes Update";
+"notification.agent_update.body" = "Your agent has new activity.";
+"notification.action.reply" = "Reply";
+"notification.action.reply_button" = "Send";
+"notification.action.reply_placeholder" = "Message Hermes…";
+"notification.action.open_chat" = "Open Chat";
+"notification.action.dismiss" = "Dismiss";
+
+/* API Client */
+"api.unexpected_response" = "Hermes responded but the format was unexpected.";
